@@ -13,7 +13,7 @@ public class GameMap {
     private Tank tk1, tk2;
     private GameElement[][] map;
     private String srcPath;
-    private int max_x, max_y;
+    private int max_x, max_y; // max possible x and y in the whole map
 
     private Hashtable<Blks, BlkCoord> blkToPos = new Hashtable<>();
 
@@ -27,7 +27,6 @@ public class GameMap {
             reader = new InputStreamReader(fin);
             buf_reader = new BufferedReader(reader);
             parseMap(buf_reader);
-            Consts.mapSize = new Coord(max_x, max_y);
         } catch (Exception e) {
             System.out.println("excetion thrown when loading map: " + e.getMessage());
         }
@@ -60,7 +59,8 @@ public class GameMap {
         }
         return res;
     }
-    public GameElement getBlk(BlkCoord pos){
+
+    public GameElement getBlk(BlkCoord pos) {
         return map[pos.x][pos.y];
     }
 
@@ -115,37 +115,48 @@ public class GameMap {
         try {
             // read the header
             String[] sizeStr = bufr.readLine().split("[*,\s]+", 0);
-            max_x = Integer.parseInt(sizeStr[0]);
-            max_y = Integer.parseInt(sizeStr[1]);
-            map = new GameElement[max_x + 1][max_y + 1];
+            max_x = Integer.parseInt(sizeStr[0]) + 2;
+            max_y = Integer.parseInt(sizeStr[1]) + 2;
+            map = new GameElement[max_x + 1][max_y + 1]; //
+            ShVar.mapSize = new Coord(max_x, max_y);
+            for (int i = 0; i < max_x; i++) {
+                map[i][0] = new SolidBlk(new BlkCoord(i, 0));
+                map[i][max_y - 1] = new SolidBlk(new BlkCoord(i, max_y - 1));
+            }
+            for (int i = 0; i < max_y; i++) {
+                map[0][i] = new SolidBlk(new BlkCoord(0, i));
+                map[max_x - 1][i] = new SolidBlk(new BlkCoord(max_x - 1, i));
+                blkToPos.put((Blks) map[0][i], new BlkCoord(0, i));
+            }
+
             int cur_y = 0;
             while ((curLine = bufr.readLine()) != null) {
-                for (int cur_x = 0; cur_x < max_x; cur_x++) {
+                for (int cur_x = 0; cur_x < max_x - 2; cur_x++) {
                     switch (curLine.charAt(cur_x)) {
                         case 'O':
                             break;
                         case 'D':
-                            map[cur_x][cur_y] = new DestrBlk(new BlkCoord(cur_x, cur_y));
+                            map[cur_x + 1][cur_y + 1] = new DestrBlk(new BlkCoord(cur_x + 1, cur_y + 1));
                             // top left corner, so + 1 for y
                             break;
                         case 'S':
-                            map[cur_x][cur_y] = new SolidBlk(new BlkCoord(cur_x, cur_y));
+                            map[cur_x + 1][cur_y + 1] = new SolidBlk(new BlkCoord(cur_x + 1, cur_y + 1));
                             break;
                         case '1':
-                            tk1 = new Tank(new Coord(cur_x, cur_y), 1);
+                            tk1 = new Tank(new Coord(cur_x + 1, cur_y + 1), 1);
                             break;
                         case '2':
-                            tk2 = new Tank(new Coord(cur_x, cur_y), 2);
-                            map[cur_x][cur_y] = new EmptyBlk(new BlkCoord(cur_x, cur_y));
+                            tk2 = new Tank(new Coord(cur_x + 1, cur_y + 1), 2);
+                            map[cur_x + 1][cur_y + 1] = new EmptyBlk(new BlkCoord(cur_x + 1, cur_y + 1));
                             break;
                     }
-                    if (map[cur_x][cur_y] != null)
-                    map[cur_x][cur_y].setMap(this);
-                    if (map[cur_x][cur_y] instanceof Blks)
-                        blkToPos.put((Blks) map[cur_x][cur_y], new BlkCoord(cur_x, cur_y));
+
+                    if (map[cur_x + 1][cur_y + 1] instanceof Blks)
+                        blkToPos.put((Blks) map[cur_x + 1][cur_y + 1], new BlkCoord(cur_x + 1, cur_y + 1));
                 }
                 cur_y++;
             }
+            ShVar.map = this;
         } catch (Exception e) {
             System.out.println("exception thrown when parsing map: " + e.getMessage());
         }

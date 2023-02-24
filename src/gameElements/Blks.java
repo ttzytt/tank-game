@@ -24,10 +24,10 @@ public abstract class Blks extends GameElement{
             return super.processCollision(other);
         }
         Tank t = (Tank) other;
-        if (getMap().getBlk(getIntPos().getAdj(t.getCurDir().turnOpp(), 2)) instanceof Blks 
-        // || 
-        //     getMap().getBlk(getIntPos().getAdj(t.getCurDir().turnLeft(), 1).getAdj(t.getCurDir().turnOpp(), 2)) instanceof Blks ||
-        //     getMap().getBlk(getIntPos().getAdj(t.getCurDir().turnRight(), 1).getAdj(t.getCurDir().turnOpp(), 2)) instanceof Blks
+        TankBlkCollisionAuxInfo auxInfo = new TankBlkCollisionAuxInfo(this, t);
+        if ((auxInfo.isTankEnclosed && auxInfo.midOpp instanceof Blks)
+            || (auxInfo.isTankOffsetLowerOrLeft && (auxInfo.lowerOpp instanceof Blks || auxInfo.midOpp instanceof Blks))
+            || (auxInfo.isTankOffsetHigherOrRight && (auxInfo.upperOpp instanceof Blks || auxInfo.midOpp instanceof Blks))
         ){
             return false;
         }

@@ -98,8 +98,8 @@ public class Tank extends MovableElement {
             TankBlkCollisionAuxInfo auxInfo = new TankBlkCollisionAuxInfo(b, this);
             if (!(auxInfo.midOpp instanceof Blks) && 
                 auxInfo.isTankEnclosed || 
-                (!auxInfo.isTankEnclosed && auxInfo.isTankOffsetLowerOrLeft && !(auxInfo.lowerOpp instanceof Blks) && !(auxInfo.midOpp instanceof Blks)) || 
-                (!auxInfo.isTankEnclosed && auxInfo.isTankOffsetHigherOrRight && !(auxInfo.upperOpp instanceof Blks) && !(auxInfo.midOpp instanceof Blks))
+                (auxInfo.isTankOffsetLowerOrLeft && !(auxInfo.lowerOpp instanceof Blks) && !(auxInfo.midOpp instanceof Blks)) || 
+                (auxInfo.isTankOffsetHigherOrRight && !(auxInfo.upperOpp instanceof Blks) && !(auxInfo.midOpp instanceof Blks))
             ) {
                 pos = pos.sub(new Coord(curDir, Consts.TANK_COLLIDE_BOUNCE_DIST));
                 // tank can bounce bank if and only if it will not bounce to another block

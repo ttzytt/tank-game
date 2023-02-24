@@ -23,7 +23,7 @@ public class Bullet extends MovableElement{
     @Override 
     public void mov(long dt){
         Coord npos = pos.add(curVelo.mul(dt / 1000f));
-        if (!npos.inRect(size, Coord.zero(), Consts.mapSize)){
+        if (!npos.inRect(size, Coord.zero(), ShVar.mapSize)){
             removeStat = RemoveStat.TO_REM;
         }
         else

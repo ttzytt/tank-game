@@ -36,7 +36,7 @@ public class Consts {
     public final static int INIT_X_PIX = 500;
     public final static int INIT_Y_PIX = 500;
 
-    public final static int FRAME_RATE = 120;
+    public final static int FRAME_RATE = 140;
     public final static int FRAME_INTERV = (int)Math.round(1000.0 / FRAME_RATE);
 
     // ----------- game elements setting  ------------
@@ -57,6 +57,6 @@ public class Consts {
     public final static Coord INIT_BULLET_SIZE = new Coord(.2f, .2f);
     public final static int INIT_BULLET_FIRE_INTERV = 300; // 300 ms
 
-    // ----------- shared variables ------------
+    // ----------- shared vmapSizeariables ------------
     public static Coord mapSize;
 }   

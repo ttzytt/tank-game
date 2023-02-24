@@ -12,7 +12,7 @@ public abstract class MovableElement extends GameElement {
         // dt is milliseconds
         // check if the point is in the map
         Coord npos = pos.add(curVelo.mul(dt / 1000f));
-        if (npos.inRect(size, Coord.zero(), Consts.mapSize))
+        if (npos.inRect(size, Coord.zero(), ShVar.mapSize))
             pos = npos;
     }
 
