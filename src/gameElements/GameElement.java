@@ -12,6 +12,45 @@ abstract public class GameElement {
     Coord size = new Coord(0, 0);
     int hp, damage;
     GameMap map;
+
+    public class TankBlkCollisionAuxInfo {
+        boolean isTankEnclosed; // is the collided object completely enclosed by this object (the blk)
+        boolean isTankOffsetLowerOrLeft; // if it is not fully enclosed, then is the offset lower or left
+        boolean isTankOffsetHigherOrRight; // if it is not fully enclosed, then is the offset higher or right
+        boolean isHor;
+        GameElement lowerOpp, midOpp, upperOpp; // the lower, middle, upper opposite side of the blk
+
+        TankBlkCollisionAuxInfo(Blks b, Tank t) {
+            Direct curDir = t.curDir;
+            // if the tank is moving horizontally, check if its y1 y2 is in the range of the
+            // block
+            // if the tank is moving vertically, check if its x1 x2 is in the range of the
+            // block
+            isHor = curDir == Direct.LEFT || curDir == Direct.RIGHT;
+            float x1 = b.getIntPos().x + .02f, x2 = b.getIntPos().x + b.getSize().x - .02f;
+            float y1 = b.getIntPos().y + .02f, y2 = b.getIntPos().y + b.getSize().y - .02f;
+            float tx1 = pos.x, tx2 = pos.x + size.x;
+            float ty1 = pos.y, ty2 = pos.y + size.y;
+            isTankEnclosed = isHor ? (y1 <= ty1 && ty2 <= y2) : (x1 <= tx1 && tx2 <= x2);
+
+            // is the tank lower than (x1 or y1) or higher than (x2 or y2)
+            isTankOffsetLowerOrLeft = isHor ? (ty2 > y2) : (tx1 < x1);
+            isTankOffsetHigherOrRight = isHor ? (ty2 < y2) : (tx1 > x1);
+            // if it is lower, and the back of the lower block have no wall, move back
+            // same worked for the upper block
+            lowerOpp = b.getMap()
+                    .getBlk(b.getIntPos().getAdj(curDir.turnLeft(), 1).getAdj(curDir.turnOpp(), 2));
+            midOpp = b.getMap().getBlk(b.getIntPos().getAdj(curDir.turnOpp(), 2));
+            upperOpp = b.getMap()
+                    .getBlk(b.getIntPos().getAdj(curDir.turnRight(), 1).getAdj(curDir.turnOpp(), 2));
+            if (curDir == Direct.DOWN || curDir == Direct.RIGHT) {
+                GameElement tmp = lowerOpp;
+                lowerOpp = upperOpp;
+                upperOpp = tmp;
+            }
+        }
+    }
+
     public GameMap getMap() {
         return map;
     }
@@ -25,24 +64,29 @@ abstract public class GameElement {
     };
 
     public static boolean processCollision(GameElement a, GameElement b) {
-        if (a == b) return false;
-        if (a.getAllSubEle().contains(b) || b.getAllSubEle().contains(a)) return false;
-        if (a.getRemoveStat() != RemoveStat.NOT_REM || b.getRemoveStat() != RemoveStat.NOT_REM) return false;
-        if (a.getHp() != -1){
+        if (a == b)
+            return false;
+        if (a.getAllSubEle().contains(b) || b.getAllSubEle().contains(a))
+            return false;
+        if (a.getRemoveStat() != RemoveStat.NOT_REM || b.getRemoveStat() != RemoveStat.NOT_REM)
+            return false;
+        if (a.getHp() != -1) {
             a.processCollision(b);
         }
-        if (b.getHp() != -1){
+        if (b.getHp() != -1) {
             b.processCollision(a);
         }
-        if (a instanceof Bullet) a.setRemoveStat(RemoveStat.TO_REM);
-        if (b instanceof Bullet) b.setRemoveStat(RemoveStat.TO_REM);
+        if (a instanceof Bullet)
+            a.setRemoveStat(RemoveStat.TO_REM);
+        if (b instanceof Bullet)
+            b.setRemoveStat(RemoveStat.TO_REM);
         return true;
     }
 
     protected boolean processCollision(GameElement other) {
 
         hp -= other.getDamage();
-        System.out.println("Collision detected: " + this + "(" + getHp() + ") " + other + "(" + other.getHp() + ")" );
+        System.out.println("Collision detected: " + this + "(" + getHp() + ") " + other + "(" + other.getHp() + ")");
         if (hp <= 0) {
             System.out.println(this + " is destroyed.");
             removeStat = RemoveStat.TO_REM;

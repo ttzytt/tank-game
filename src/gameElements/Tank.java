@@ -95,36 +95,14 @@ public class Tank extends MovableElement {
         if (other instanceof Blks) {
             // also ensure that the other direction have no wall
             Blks b = (Blks) other;
-            // if the tank is moving horizontally, check if its y1 y2 is in the range of the block
-            // if the tank is moving vertically, check if its x1 x2 is in the range of the block
-            boolean isHor = curDir == Direct.LEFT || curDir == Direct.RIGHT;
-            float x1 = b.getIntPos().x + .02f, x2 = b.getIntPos().x + b.getSize().x -.02f;
-            float y1 = b.getIntPos().y + .02f, y2 = b.getIntPos().y + b.getSize().y - .02f;
-            float tx1 = pos.x, tx2 = pos.x + size.x;
-            float ty1 = pos.y, ty2 = pos.y + size.y;
-            boolean isInRange = isHor ? (y1 <= ty1 && ty2 <= y2) : (x1 <= tx1 && tx2 <= x2);
-
-            // is the tank lower than (x1 or y1) or higher than (x2 or y2)
-            boolean isLower = isHor ? (ty2 > y2) : (tx1 < x1);
-            boolean isHigher = isHor ? (ty2 < y2) : (tx1 > x1);
-            // if it is lower, and the back of the lower block have no wall, move back
-            // same worked for the upper block
-            GameElement lowerOpp = b.getMap().getBlk(b.getIntPos().getAdj(curDir.turnLeft(), 1).getAdj(curDir.turnOpp(), 2));
-            GameElement midOpp   = b.getMap().getBlk(b.getIntPos().getAdj(curDir.turnOpp(), 2));
-            GameElement upperOpp = b.getMap().getBlk(b.getIntPos().getAdj(curDir.turnRight(), 1).getAdj(curDir.turnOpp(), 2));
-            if (curDir == Direct.DOWN || curDir == Direct.RIGHT) {
-                GameElement tmp = lowerOpp;
-                lowerOpp = upperOpp;
-                upperOpp = tmp;
-            }
-
-            if (!(midOpp instanceof Blks) && 
-                isInRange || 
-                (!isInRange && isLower && !(lowerOpp instanceof Blks) && !(midOpp instanceof Blks)) || 
-                (!isInRange && isHigher && !(upperOpp instanceof Blks) && !(midOpp instanceof Blks))
+            TankBlkCollisionAuxInfo auxInfo = new TankBlkCollisionAuxInfo(b, this);
+            if (!(auxInfo.midOpp instanceof Blks) && 
+                auxInfo.isTankEnclosed || 
+                (!auxInfo.isTankEnclosed && auxInfo.isTankOffsetLowerOrLeft && !(auxInfo.lowerOpp instanceof Blks) && !(auxInfo.midOpp instanceof Blks)) || 
+                (!auxInfo.isTankEnclosed && auxInfo.isTankOffsetHigherOrRight && !(auxInfo.upperOpp instanceof Blks) && !(auxInfo.midOpp instanceof Blks))
             ) {
                 pos = pos.sub(new Coord(curDir, Consts.TANK_COLLIDE_BOUNCE_DIST));
-
+                // tank can bounce bank if and only if it will not bounce to another block
             } 
             else
                 pos = pos.sub(new Coord(curDir, 0.05f));

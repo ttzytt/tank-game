@@ -43,7 +43,7 @@ public class Consts {
 
     public final static int INIT_TANK_HP = 50;
     public final static int INIT_TANK_DAMAGE = 4; // damage per hit
-    public final static float TANK_OFFSET_TO_GUN = 0.3f;
+    public final static float TANK_OFFSET_TO_GUN = 0.23f;
     public final static float TANK_COLLIDE_BOUNCE_DIST = .4f;
     public final static float TANK_SIZE_RATIO = .8f;
 
