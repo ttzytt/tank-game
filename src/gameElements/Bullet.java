@@ -1,8 +1,12 @@
 package gameElements;
+import networkings.msgs.*;
 import utils.*;
-
 public class Bullet extends MovableElement{
-    public Bullet(Coord pos, float speed, Direct dir) {
+
+    int fromTankID;
+    public Bullet(Coord pos, float speed, Direct dir, int id, int tankID){
+        super(id);
+        fromTankID = tankID;
         hp = -1;
         this.pos = pos;
         img = new ImagePanel(Consts.BULLET_IMG);
@@ -11,8 +15,10 @@ public class Bullet extends MovableElement{
         damage = Consts.INIT_BULLET_DAMAGE;
         toRemove = false;
     }
+
     // constructor with image 
-    public Bullet(Coord pos, float speed, Direct dir, ImagePanel img) {
+    public Bullet(Coord pos, float speed, Direct dir, ImagePanel img, int id) {
+        super(id);
         this.pos = pos;
         this.img = img;
         damage = Consts.INIT_BULLET_DAMAGE;
@@ -24,10 +30,13 @@ public class Bullet extends MovableElement{
     public void mov(long dt){
         Coord npos = pos.add(curVelo.mul(dt / 1000f));
         if (!npos.inRect(size, Coord.zero(), ShVar.mapSize)){
-            removeStat = RemoveStat.TO_REM;
+            removeStat = RemStat.TO_REM;
         }
         else
             pos = npos;
     }
 
+    public Bullet(BulletLaunchMsg msg){
+        this(msg.pos, msg.velo.getDirSpeed(), msg.velo.getDir(), msg.id, msg.tankId);
+    }
 }

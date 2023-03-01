@@ -7,6 +7,9 @@ public abstract class MovableElement extends GameElement {
     Coord curVelo;
     Direct curDir;
 
+    public MovableElement(int id) {
+        super(id);
+    }
 
     public void mov(long dt) {
         // dt is milliseconds
@@ -32,7 +35,4 @@ public abstract class MovableElement extends GameElement {
         this.curDir = curDir;
     }
 
-    public KeyListener getMoveHandler() {
-        return null;
-    }
 }

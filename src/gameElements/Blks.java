@@ -3,7 +3,8 @@ import utils.*;
 import java.util.*;
 public abstract class Blks extends GameElement{
     public BlkCoord intPos;
-    Blks(BlkCoord initPos){
+    Blks(BlkCoord initPos, int id){
+        super(id);
         size = new Coord(1, 1);
         damage = 0;
         pos = new Coord(initPos.x, initPos.y);

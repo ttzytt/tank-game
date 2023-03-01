@@ -1,7 +1,8 @@
 package utils;
 import java.awt.*;
+import java.io.Serializable;
 
-public class Coord {
+public class Coord implements Serializable{
     public float x, y;
     public Coord(){
         this.x = 0;
@@ -31,8 +32,34 @@ public class Coord {
         }
     }
 
+    public Direct getDir(){
+        assert (x == 0 || y == 0) : "Cannot move both x and y at the same time, this coord might be a position value";
+        if (x == 0){
+            if (y > 0){
+                return Direct.DOWN;
+            } else {
+                return Direct.UP;
+            }
+        } else {
+            if (x > 0){
+                return Direct.RIGHT;
+            } else {
+                return Direct.LEFT;
+            }
+        }
+    }
+
+    public float getDirSpeed(){
+        assert (x == 0 || y == 0) : "Cannot move both x and y at the same time, this coord might be a position value";
+        return Math.abs(x) + Math.abs(y);
+    }
+
     public static Rectangle toRect(Coord pos, Coord size){
         return new Rectangle((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
+    }
+
+    public Coord(BlkCoord c){
+        this(c.x, c.y);
     }
 
     public Coord(float x, float y){
@@ -123,5 +150,14 @@ public class Coord {
     @Override
     public String toString(){
         return "(" + x + ", " + y + ")";
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if (o == null) return false;
+        if (o == this) return true;
+        if (!(o instanceof Coord)) return false;
+        Coord c = (Coord)o;
+        return c.x == x && c.y == y;
     }
 }

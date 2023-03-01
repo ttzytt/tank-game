@@ -3,25 +3,15 @@ package gameElements;
 import utils.*;
 import java.util.*;
 import java.awt.event.*;
-
-public abstract class Weapons extends MovableElement {
+import static utils.Consts.UNDEF_ID;
+import static utils.ShVar.*;
+import networkings.msgs.*;
+public abstract class Weapons implements KeyControllable{
     long lastFireTm;
     long fireInterv;
     float speed;
-    int side;
     Direct curDir = Direct.UP;
-    ArrayList<GameElement> inFlightBullets = new ArrayList<>();
-    @Override
-    public ArrayList<GameElement> getDirectSubEle(){
-        inFlightBullets.removeIf(nullEle -> nullEle.removeStat == RemoveStat.REMED);
-        return inFlightBullets;
-    }
-
-    @Override
-    public void mov(long dt) {
-        super.mov(dt);
-    }
-
+    int fromTankID;
     public long getLastFireTm() {
         return lastFireTm;
     }
@@ -46,13 +36,6 @@ public abstract class Weapons extends MovableElement {
         this.speed = speed;
     }
 
-    public int getSide() {
-        return side;
-    }
-
-    public void setSide(int side) {
-        this.side = side;
-    }
 
     public Direct getCurDir() {
         return curDir;
@@ -62,27 +45,30 @@ public abstract class Weapons extends MovableElement {
         this.curDir = curDir;
     }
 
-    Bullet Fire() {
+    Bullet Fire(boolean netMode) {
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
-            Bullet bullet = new Bullet(pos, speed, curDir);
-            inFlightBullets.add(bullet);
+            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
+            bullet.addNoColObjs(fromTankID); 
+            if (!netMode)
+                map.addEle(bullet);
+            else{
+                clntMsgToSend.add(new BulletLaunchMsg(bullet));
+            }
             return bullet;
         }
         return null;
     }
 
-    public ArrayList<GameElement> getInFlightBullets() {
-        return inFlightBullets;
-    }
+    Coord pos; 
+    Coord size;
+    Coord curVelo;
 
-    public void setInFlightBullets(ArrayList<GameElement> inFlightBullets) {
-        this.inFlightBullets = inFlightBullets;
-    }
-
-    public Weapons(Coord pos, float speed, int id) {
-        this.side = id;
+    public Weapons(Coord pos, float speed, int tankID) {
+        fromTankID = tankID;
+        // for odd tank id, use right shift
+        // for even tank id use left shift
         this.speed = speed;
         this.pos = pos;
         this.size = new Coord(0, 0);

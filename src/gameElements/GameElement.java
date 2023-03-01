@@ -4,14 +4,11 @@ import utils.*;
 import java.util.*;
 import javax.swing.*;
 import graphics.GameMap;
+import networkings.msgs.HPUpdMsg;
+
 import java.awt.*;
 
 abstract public class GameElement {
-    ImagePanel img;
-    Coord pos = new Coord(0, 0);
-    Coord size = new Coord(0, 0);
-    int hp, damage;
-
     public static class TankBlkCollisionAuxInfo {
         boolean isTankEnclosed; // is the collided object completely enclosed by this object (the blk)
         boolean isTankOffsetLowerOrLeft; // if it is not fully enclosed, then is the offset lower or left
@@ -48,18 +45,76 @@ abstract public class GameElement {
                 upperOpp = tmp;
             }
         }
+
+        public boolean isTankEnclosed() {
+            return isTankEnclosed;
+        }
+
+        public void setTankEnclosed(boolean isTankEnclosed) {
+            this.isTankEnclosed = isTankEnclosed;
+        }
+
+        public boolean isTankOffsetLowerOrLeft() {
+            return isTankOffsetLowerOrLeft;
+        }
+
+        public void setTankOffsetLowerOrLeft(boolean isTankOffsetLowerOrLeft) {
+            this.isTankOffsetLowerOrLeft = isTankOffsetLowerOrLeft;
+        }
+
+        public boolean isTankOffsetHigherOrRight() {
+            return isTankOffsetHigherOrRight;
+        }
+
+        public void setTankOffsetHigherOrRight(boolean isTankOffsetHigherOrRight) {
+            this.isTankOffsetHigherOrRight = isTankOffsetHigherOrRight;
+        }
+
+        public boolean isHor() {
+            return isHor;
+        }
+
+        public void setHor(boolean isHor) {
+            this.isHor = isHor;
+        }
+
+        public GameElement getLowerOpp() {
+            return lowerOpp;
+        }
+
+        public void setLowerOpp(GameElement lowerOpp) {
+            this.lowerOpp = lowerOpp;
+        }
+
+        public GameElement getMidOpp() {
+            return midOpp;
+        }
+
+        public void setMidOpp(GameElement midOpp) {
+            this.midOpp = midOpp;
+        }
+
+        public GameElement getUpperOpp() {
+            return upperOpp;
+        }
+
+        public void setUpperOpp(GameElement upperOpp) {
+            this.upperOpp = upperOpp;
+        }
     }
 
-    public enum RemoveStat {
+    public enum RemStat {
         NOT_REM, TO_REM, REMED;
-    };
+    }
 
     public static boolean processCollision(GameElement a, GameElement b) {
         if (a == b)
             return false;
-        if (a.getAllSubEle().contains(b) || b.getAllSubEle().contains(a))
+        if (a.getNoColObjs().contains(b.getId()) || b.getNoColObjs().contains(a.getId()))
             return false;
-        if (a.getRemoveStat() != RemoveStat.NOT_REM || b.getRemoveStat() != RemoveStat.NOT_REM)
+        if (a.getSize().equals(Coord.zero()) || b.getSize().equals(Coord.zero()))
+            return false;
+        if (a.getRemoveStat() != RemStat.NOT_REM || b.getRemoveStat() != RemStat.NOT_REM)
             return false;
         if (a.getHp() != -1) {
             a.processCollision(b);
@@ -68,23 +123,85 @@ abstract public class GameElement {
             b.processCollision(a);
         }
         if (a instanceof Bullet)
-            a.setRemoveStat(RemoveStat.TO_REM);
+            a.setRemStat(RemStat.TO_REM);
         if (b instanceof Bullet)
-            b.setRemoveStat(RemoveStat.TO_REM);
+            b.setRemStat(RemStat.TO_REM);
         return true;
     }
 
-    protected boolean processCollision(GameElement other) {
+    ArrayList<Integer> noColObjs = new ArrayList<Integer>(); // the objects that should not be collided with (stored the
+                                                             // id)
 
-        hp -= other.getDamage();
-        if (hp <= 0) {
-            removeStat = RemoveStat.TO_REM;
-            hp = -2;
-        }
-        return true;
+    GameElement lowerOpp, midOpp, upperOpp; // the lower, middle, upper opposite side of the blk
+
+    boolean HPchanged = false;
+
+    ImagePanel img;
+
+    Coord pos = new Coord(0, 0);
+    Coord size = new Coord(0, 0);
+
+    int hp, damage;
+
+    public int id;
+
+    public RemStat removeStat = RemStat.NOT_REM;
+
+    public GameElement(int id) {
+        this.id = id;
     }
 
-    public RemoveStat removeStat = RemoveStat.NOT_REM;
+    public ArrayList<Integer> getNoColObjs() {
+        return noColObjs;
+    }
+
+    public void setNoColObjs(ArrayList<Integer> noColObjs) {
+        this.noColObjs = noColObjs;
+    }
+
+    public void addNoColObjs(int noColObj) {
+        this.noColObjs.add(noColObj);
+    }
+
+    public GameElement getLowerOpp() {
+        return lowerOpp;
+    }
+
+    public void setLowerOpp(GameElement lowerOpp) {
+        this.lowerOpp = lowerOpp;
+    }
+
+    public GameElement getMidOpp() {
+        return midOpp;
+    }
+
+    public void setMidOpp(GameElement midOpp) {
+        this.midOpp = midOpp;
+    }
+
+    public GameElement getUpperOpp() {
+        return upperOpp;
+    }
+
+    public void setUpperOpp(GameElement upperOpp) {
+        this.upperOpp = upperOpp;
+    }
+
+    public boolean isHPchanged() {
+        return HPchanged;
+    };
+
+    public void setHPchanged(boolean hPchanged) {
+        HPchanged = hPchanged;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public boolean intersect(GameElement other) {
         // from pos and size, calculate if the rectangle collide with other
@@ -95,28 +212,12 @@ abstract public class GameElement {
                 bx1 <= ax2 && bx2 >= ax1 && by1 <= ay2 && by2 >= ay1;
     }
 
-    public RemoveStat getRemoveStat() {
+    public RemStat getRemoveStat() {
         return removeStat;
     }
 
-    public void setRemoveStat(RemoveStat removeStat) {
+    public void setRemStat(RemStat removeStat) {
         this.removeStat = removeStat;
-    }
-
-    public ArrayList<GameElement> getDirectSubEle() {
-        return null;
-    }
-
-    public ArrayList<GameElement> getAllSubEle() {
-        ArrayList<GameElement> res = new ArrayList<>();
-        ArrayList<GameElement> subEle = getDirectSubEle();
-        if (subEle != null) {
-            res.addAll(subEle);
-            for (GameElement ele : subEle) {
-                res.addAll(ele.getAllSubEle());
-            }
-        }
-        return res;
     }
 
     public void setImgBound(int pixPerBlk) {
@@ -162,5 +263,17 @@ abstract public class GameElement {
 
     public void setDamage(int damage) {
         this.damage = damage;
+    }
+
+    protected boolean processCollision(GameElement other) {
+
+        hp -= other.getDamage();
+        if (other.getDamage() > 0)
+            HPchanged = true;
+        if (hp <= 0) {
+            removeStat = RemStat.TO_REM;
+            hp = -2;
+        }
+        return true;
     }
 }

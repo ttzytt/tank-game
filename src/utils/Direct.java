@@ -1,4 +1,8 @@
 package utils;
+
+import java.io.Serializable;
+import utils.Coord;
+
 public enum Direct {
     UP{
         @Override
@@ -59,4 +63,16 @@ public enum Direct {
     abstract public Direct turnOpp();
     abstract public Direct turnRight();
     abstract public Direct turnLeft();
+
+    public static Direct getRandDir(){
+        int i = (int)(Math.random()*4);
+        if (i == 0)
+            return UP;
+        else if (i == 1)
+            return DOWN;
+        else if (i == 2)
+            return LEFT;
+        else
+            return RIGHT;   
+    }
 }

@@ -57,6 +57,8 @@ public class Consts {
     public final static Coord INIT_BULLET_SIZE = new Coord(.2f, .2f);
     public final static int INIT_BULLET_FIRE_INTERV = 300; // 300 ms
 
-    // ----------- shared vmapSizeariables ------------
-    public static Coord mapSize;
+
+    // ------------ other defined numbers
+    public final static int UNDEF_ID = -1;
+    public final static String SERV_IP = "172.16.101.142";
 }   

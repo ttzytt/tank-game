@@ -1,11 +1,12 @@
 package graphics;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import utils.*;
 import utils.Helpers.*;
 import gameElements.*;
-import gameElements.GameElement.RemoveStat;
+import gameElements.GameElement.RemStat;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 
 public class GamePanel extends JPanel {
+    boolean netMode;
     private GameMap map;
     private long lstRefresh = -1;
     private Timer timer = new Timer(Consts.FRAME_INTERV, new ActionListener() {
@@ -47,20 +49,20 @@ public class GamePanel extends JPanel {
         if (lstRefresh != -1) {
             long inter = System.currentTimeMillis() - lstRefresh;
             for (GameElement a : eles) {
-                if (a.getRemoveStat() == RemoveStat.TO_REM && a.getImg() != null) {
+                if (a.getRemoveStat() == RemStat.TO_REM && a.getImg() != null) {
                     System.out.println("Removing " + a);
                     remove(a.getImg());
                     addedImg.remove(a.getImg());
-                    a.setRemoveStat(RemoveStat.REMED);
-                    if (a instanceof Blks)
-                        map.remBlk((Blks)a);
+                    a.setRemStat(RemStat.REMED);
+                    map.remEle(a);
                     continue;
                 }
-                if (a.getImg() != null && !addedImg.contains(a.getImg()) && a.getRemoveStat() == RemoveStat.NOT_REM) {
+                if (a.getImg() != null && !addedImg.contains(a.getImg()) && a.getRemoveStat() == RemStat.NOT_REM) {
                     add(a.getImg());
                     addedImg.add(a.getImg());
                 }
-                if (a instanceof MovableElement) {
+
+                if (!netMode && a instanceof MovableElement) {
                     boolean intersected = false;
                     for (GameElement b : eles) {
                         if (a.intersect(b)) {
@@ -78,16 +80,17 @@ public class GamePanel extends JPanel {
         g.setColor(Color.darkGray);
         g.fillRect(0, 0, map.getMax_x() * calcBlkPixSiz(), map.getMax_y() * calcBlkPixSiz());
         for (GameElement a : eles) {
-            a.setImgBound(calcBlkPixSiz()); // reset image size according to the new pixel size
+            a.setImgBound(calcBlkPixSiz()); // reset image size according the new pixel size
             Helpers.validateAndRepaint(a.getImg());
 
         }
         lstRefresh = System.currentTimeMillis();
     }
 
-    public GamePanel() {
+    public GamePanel(boolean netMode) {
+        this.netMode = netMode;
         timer.start();
-        map = new GameMap("default.txt");
+        map = new GameMap("default.txt", netMode);
         lstRefresh = System.currentTimeMillis();
         setLayout(null);
         for (GameElement b : map.getEles()) {
@@ -95,9 +98,13 @@ public class GamePanel extends JPanel {
                 add(b.getImg());
                 addedImg.add(b.getImg());
             }
-            if (b instanceof MovableElement) {
-                addKeyListener(((MovableElement) b).getMoveHandler());
-            }
+        }
+
+        for (KeyControllable kc : map.getKeyControllables()) {
+            if (!netMode)
+                addKeyListener(kc.getKeyController());
+            else
+                addKeyListener(kc.getNetModeKeyController());
         }
     }
 

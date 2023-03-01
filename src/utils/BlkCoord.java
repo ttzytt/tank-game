@@ -22,4 +22,16 @@ public class BlkCoord {
         return null;
     }
 
+    public BlkCoord(Coord c){
+        this((int)c.x, (int)c.y);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BlkCoord) {
+            BlkCoord c = (BlkCoord) obj;
+            return c.x == x && c.y == y;
+        }
+        return false;
+    }
 }
