@@ -58,7 +58,7 @@ public class Consts {
     public final static int INIT_BULLET_FIRE_INTERV = 300; // 300 ms
 
 
-    // ------------ other defined numbers
-    public final static int UNDEF_ID = -1;
-    public final static String SERV_IP = "172.16.101.142";
+    // ------------ networking settings ------------
+    public final static String SERV_IP = "127.0.0.1";
+    public final static int MOVABLE_POS_UPD_INTERV = 15; // 15 ms
 }   

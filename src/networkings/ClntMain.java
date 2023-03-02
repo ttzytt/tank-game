@@ -10,6 +10,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import javax.sql.rowset.spi.SyncResolver;
+
 import gameElements.*;
 import gameElements.GameElement.RemStat;
 import utils.Consts;
@@ -27,7 +29,9 @@ public class ClntMain {
         while (true) {
             EvtMsg newM = (EvtMsg) udpSock.recvObj(servUdpAddr);
             msgRecved.add(newM);
-            msgRecved.notify();
+            synchronized(msgRecved){
+                msgRecved.notify();
+            }
         }
     }
 
@@ -44,7 +48,9 @@ public class ClntMain {
         while (true) {
             if (clntMsgToSend.isEmpty()) {
                 try {
-                    clntMsgToSend.wait();
+                    synchronized (clntMsgToSend){
+                        clntMsgToSend.wait();
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -74,9 +80,12 @@ public class ClntMain {
             sock = new Socket(Consts.SERV_IP, ServConsts.TCP_PORT);
             udpSock = new UDPwrap(getRandPort());
             DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
-            dos.writeInt(udpSock.getUdpSock().getPort()); // send the serve the UDP port
+            System.out.println("port= " + udpSock.getUdpSock().getLocalPort());
+            dos.writeInt(udpSock.getUdpSock().getLocalPort()); // send the serve the UDP port
             DataInputStream dis = new DataInputStream(sock.getInputStream());
             uid = dis.readInt();
+            int servUDPport = dis.readInt();
+            servUdpAddr = new InetSocketAddress(Consts.SERV_IP, servUDPport);
             System.out.println("connected to the server");
         } catch (Exception e) {
             System.out.println("failed to connect to the server");
@@ -104,10 +113,10 @@ public class ClntMain {
                     EvtMsg m = msgRecved.poll();
                     if (m instanceof BornMsg){
                         BornMsg bm = (BornMsg) m;
-                        map.addEle(new Tank(bm));
+                        map.addEle(new Tank(bm, true));
                     } else if (m instanceof BulletLaunchMsg){
                         BulletLaunchMsg bm = (BulletLaunchMsg) m;
-                        map.addEle(new Bullet(bm));
+                        map.addEle(new Bullet(bm, true));
                     } else if (m instanceof HPUpdMsg){
                         HPUpdMsg hm = (HPUpdMsg) m;
                         map.getEleById(hm.getId()).setHp(hm.getNewHp());
@@ -121,5 +130,8 @@ public class ClntMain {
                 }
             }
         }
+    }
+    public static void main(String[] args) {
+        new ClntMain();
     }
 }

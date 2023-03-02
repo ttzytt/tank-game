@@ -23,6 +23,8 @@ import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
 import gameElements.*;
 import gameElements.GameElement.RemStat;
 
@@ -38,7 +40,7 @@ public class ServMain {
         public int UDPport;
         public String IP;
 
-        public InetSocketAddress getAddr(){
+        public InetSocketAddress getAddr() {
             return new InetSocketAddress(IP, UDPport);
         }
 
@@ -52,10 +54,12 @@ public class ServMain {
 
         public void recvClntMsg() {
             while (true) {
-                EvtMsg newM = (EvtMsg)udpSock.recvObj(getAddr());
+                EvtMsg newM = (EvtMsg) udpSock.recvObj(getAddr());
                 lstActive = System.currentTimeMillis();
                 msgRecved.add(newM);
-                msgRecved.notify();
+                synchronized(msgRecved){
+                    msgRecved.notify();
+                }
             }
         }
 
@@ -77,11 +81,13 @@ public class ServMain {
             // check if others called notify
             while (msgToBroadCast.isEmpty()) {
                 // untile there are something to send
-                try {
-                    msgToBroadCast.wait();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("client msg wait failed");
+                synchronized (msgToBroadCast) {
+                    try {
+                        msgToBroadCast.wait();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("client msg wait failed");
+                    }
                 }
             }
             while (msgToBroadCast.size() > 0) {
@@ -105,14 +111,15 @@ public class ServMain {
 
     ArrayList<Clnt> clnts = new ArrayList<>();
     GameMap mp = new GameMap("withoutTank.txt", true);
+
     public void acceptClnt() {
         while (true) {
             Socket cSock = null;
             try {
                 cSock = listenSock.accept();
-                System.out.println("one client connected");
                 DataInputStream dis = new DataInputStream(cSock.getInputStream());
                 int cUDPport = dis.readInt();
+                System.out.println("one client connected port = " + cUDPport);
                 Clnt clnt = new Clnt(getNexId(), cUDPport, cSock.getInetAddress().getHostAddress());
                 clnts.add(clnt);
                 clnt.invokeRecvMsg();
@@ -120,8 +127,17 @@ public class ServMain {
                 dos.writeInt(getCurId());
                 dos.writeInt(ServConsts.UDP_PORT);
                 mp.addTankAtRandPos(getCurId());
-                msgToBroadCast.add(new BornMsg((Tank) mp.getEleById(getCurId())));
-                msgToBroadCast.notify();
+    
+                // tell the client about all the exisiting palyers
+                for (GameElement ele : mp.getEles()) {
+                    if (ele instanceof Tank) {
+                        msgToBroadCast.add(new BornMsg((Tank) ele));
+                    }
+                }
+
+                synchronized(msgToBroadCast){
+                    msgToBroadCast.notify();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("client connection failed");
@@ -146,22 +162,25 @@ public class ServMain {
         t.start();
     }
 
-
-    boolean processCollision(GameElement ele){
+    boolean processCollision(GameElement ele) {
         boolean collided = false;
-        for (GameElement other : mp.getEles()){
-            if (ele.intersect(other)){
+        for (GameElement other : mp.getEles()) {
+            if (ele.intersect(other)) {
                 collided |= GameElement.processCollision(ele, other);
-                if (other.isHPchanged()){
+                if (other.isHPchanged()) {
                     msgToBroadCast.add(new HPUpdMsg(other));
                     other.setHPchanged(false);
-                    msgToBroadCast.notify();
+                    synchronized(msgToBroadCast){
+                        msgToBroadCast.notify();
+                    }
                 }
             }
         }
-        if (ele.isHPchanged()){
+        if (ele.isHPchanged()) {
             msgToBroadCast.add(new HPUpdMsg(ele));
-            msgToBroadCast.notify();
+            synchronized(msgToBroadCast){
+                msgToBroadCast.notify();
+            }
             ele.setHPchanged(false);
         }
         return collided;
@@ -186,6 +205,7 @@ public class ServMain {
                 // prevent continuous increase of msgRecved
                 while (msgRecved.size() > 0) {
                     EvtMsg m = msgRecved.poll();
+                    // System.out.println("cur evt= " + m);
                     MovableElement me = null;
                     if (m instanceof MovableUpdMsg) {
                         MovableUpdMsg mmsg = (MovableUpdMsg) m;
@@ -193,10 +213,12 @@ public class ServMain {
                         me.setCurVelo(mmsg.velo);
                     } else if (m instanceof BulletLaunchMsg) {
                         BulletLaunchMsg bmsg = (BulletLaunchMsg) m;
-                        mp.addEle(me = new Bullet(bmsg));
+                        mp.addEle(me = new Bullet(bmsg, false));
                         bmsg.id = getNexId(); // assign id to the bullet
                         msgToBroadCast.add(bmsg);
-                        msgToBroadCast.notify();
+                        synchronized(msgToBroadCast){
+                            msgToBroadCast.notify();
+                        }
                     } else {
                         throw new RuntimeException("only two types of msg are allowed by client");
                     }
@@ -205,19 +227,23 @@ public class ServMain {
                     if (!processCollision(me)) {
                         me.mov(interval);
                         msgToBroadCast.add(new MovableUpdMsg(me));
-                        msgToBroadCast.notify();
+                        synchronized(msgToBroadCast){
+                            msgToBroadCast.notify();
+                        }
                     }
                 }
             }
-            for (GameElement a : mp.getEles()){
-                if (a.getRemoveStat() == RemStat.TO_REM){
+            for (GameElement a : mp.getEles()) {
+                if (a.getRemoveStat() == RemStat.TO_REM) {
                     msgToBroadCast.add(new RemEleMsg(a));
-                    msgToBroadCast.notify();
+                    synchronized(msgToBroadCast){
+                        msgToBroadCast.notify();
+                    }
                     mp.remEle(a);
                 }
             }
         }
-        
+
     }
 
     public static void main(String[] args) {

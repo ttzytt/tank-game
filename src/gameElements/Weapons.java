@@ -3,7 +3,6 @@ package gameElements;
 import utils.*;
 import java.util.*;
 import java.awt.event.*;
-import static utils.Consts.UNDEF_ID;
 import static utils.ShVar.*;
 import networkings.msgs.*;
 public abstract class Weapons implements KeyControllable{
@@ -12,8 +11,59 @@ public abstract class Weapons implements KeyControllable{
     float speed;
     Direct curDir = Direct.UP;
     int fromTankID;
+    boolean updPosToServer;
+
+
     public long getLastFireTm() {
         return lastFireTm;
+    }
+
+    public void setLastFireTm(long lastFireTm) {
+        this.lastFireTm = lastFireTm;
+    }
+
+    public void setFireInterv(long fireInterv) {
+        this.fireInterv = fireInterv;
+    }
+
+    public int getFromTankID() {
+        return fromTankID;
+    }
+
+    public void setFromTankID(int fromTankID) {
+        this.fromTankID = fromTankID;
+    }
+
+    public boolean isUpdPosToServer() {
+        return updPosToServer;
+    }
+
+    public void setUpdPosToServer(boolean updPosToServer) {
+        this.updPosToServer = updPosToServer;
+    }
+
+    public Coord getPos() {
+        return pos;
+    }
+
+    public void setPos(Coord pos) {
+        this.pos = pos;
+    }
+
+    public Coord getSize() {
+        return size;
+    }
+
+    public void setSize(Coord size) {
+        this.size = size;
+    }
+
+    public Coord getCurVelo() {
+        return curVelo;
+    }
+
+    public void setCurVelo(Coord curVelo) {
+        this.curVelo = curVelo;
     }
 
     public void setLastFireTm(int lastFireTm) {
@@ -45,13 +95,13 @@ public abstract class Weapons implements KeyControllable{
         this.curDir = curDir;
     }
 
-    Bullet Fire(boolean netMode) {
+    Bullet Fire() {
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
-            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
+            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID, updPosToServer);
             bullet.addNoColObjs(fromTankID); 
-            if (!netMode)
+            if (!updPosToServer)
                 map.addEle(bullet);
             else{
                 clntMsgToSend.add(new BulletLaunchMsg(bullet));

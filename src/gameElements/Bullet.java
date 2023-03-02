@@ -4,8 +4,8 @@ import utils.*;
 public class Bullet extends MovableElement{
 
     int fromTankID;
-    public Bullet(Coord pos, float speed, Direct dir, int id, int tankID){
-        super(id);
+    public Bullet(Coord pos, float speed, Direct dir, int id, int tankID, boolean updPosToServer){
+        super(id, updPosToServer);
         fromTankID = tankID;
         hp = -1;
         this.pos = pos;
@@ -17,8 +17,8 @@ public class Bullet extends MovableElement{
     }
 
     // constructor with image 
-    public Bullet(Coord pos, float speed, Direct dir, ImagePanel img, int id) {
-        super(id);
+    public Bullet(Coord pos, float speed, Direct dir, ImagePanel img, int id, boolean updPosToServer) {
+        super(id, updPosToServer);
         this.pos = pos;
         this.img = img;
         damage = Consts.INIT_BULLET_DAMAGE;
@@ -36,7 +36,7 @@ public class Bullet extends MovableElement{
             pos = npos;
     }
 
-    public Bullet(BulletLaunchMsg msg){
-        this(msg.pos, msg.velo.getDirSpeed(), msg.velo.getDir(), msg.id, msg.tankId);
+    public Bullet(BulletLaunchMsg msg, boolean updPosToServer){
+        this(msg.pos, msg.velo.getDirSpeed(), msg.velo.getDir(), msg.id, msg.tankId, updPosToServer);
     }
 }

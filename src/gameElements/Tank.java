@@ -4,6 +4,7 @@ import utils.*;
 import java.util.*;
 import utils.*;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.validation.Validator;
 
@@ -55,13 +56,19 @@ public class Tank extends MovableElement implements KeyControllable {
         this.weapon = weapon;
     }
 
-    public MoveHandler keyController = new MoveHandler(false);
-    public MoveHandler remoteModeKeyController = new MoveHandler(true);
+    public MoveHandler keyController = new MoveHandler();
     ImagePanel iup, idn, ilf, irt;
     Weapons weapon;
+    boolean updPosToServer;
+    private Timer posUpdTimer;
 
-    public Tank(Coord initPos, Direct dir, int id) {
-        super(id);
+    @Override
+    public void setUpdPosToServer(boolean updPosToServer) {
+        this.updPosToServer = updPosToServer;
+    }
+
+    public Tank(Coord initPos, Direct dir, int id, boolean updPosToServer) {
+        super(id, updPosToServer);
         hp = Consts.INIT_TANK_HP;
         weapon = new Gun(initPos, id);
         map.addKeyControllable(weapon);
@@ -86,17 +93,8 @@ public class Tank extends MovableElement implements KeyControllable {
         this.curDir = dir;
     }
 
-    @Override
-    public MoveHandler getNetModeKeyController() {
-        return remoteModeKeyController;
-    }
-
-    public void setRemoteModeKeyController(MoveHandler remoteModeKeyController) {
-        this.remoteModeKeyController = remoteModeKeyController;
-    }
-
-    public Tank(BornMsg bm) {
-        this(bm.pos, bm.dir, bm.id);
+    public Tank(BornMsg bm, boolean updPosToServer) {
+        this(bm.pos, bm.dir, bm.id, updPosToServer);
     }
 
     @Override
@@ -173,11 +171,6 @@ public class Tank extends MovableElement implements KeyControllable {
 
     // key event listener
     public class MoveHandler implements KeyListener {
-        boolean netMode;
-
-        MoveHandler(boolean netWorkMode) {
-            this.netMode = netWorkMode;
-        }
 
         public void keyPressed(KeyEvent e) {
             int keyCode = e.getKeyCode();
@@ -208,11 +201,6 @@ public class Tank extends MovableElement implements KeyControllable {
             else
                 weapon.pos = pos.add(new Coord(curDir.turnLeft(), Consts.TANK_OFFSET_TO_GUN))
                         .add(new Coord(curDir, .2f));
-            if (netMode) {
-                MovableUpdMsg mm = new MovableUpdMsg(Tank.this);
-                clntMsgToSend.add(mm);
-                clntMsgToSend.notify();
-            }
             Helpers.validateAndRepaint(img);
         }
 

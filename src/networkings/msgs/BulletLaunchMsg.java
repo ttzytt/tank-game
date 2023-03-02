@@ -21,4 +21,41 @@ public class BulletLaunchMsg extends EvtMsg{
         this(blt.getId(), blt.getId(), blt.getPos(), blt.getCurVelo());
     }
 
+    public Coord getPos() {
+        return pos;
+    }
+
+    public void setPos(Coord pos) {
+        this.pos = pos;
+    }
+
+    public Coord getVelo() {
+        return velo;
+    }
+
+    public void setVelo(Coord velo) {
+        this.velo = velo;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getTankId() {
+        return tankId;
+    }
+
+    public void setTankId(int tankId) {
+        this.tankId = tankId;
+    }
+
+    @Override
+    public String toString(){
+        return "BulletLaunchMsg: id: " + id + " tankId: " + tankId + " pos: " + pos + " velo: " + velo;
+    }
+
 }

@@ -11,21 +11,12 @@ public class Gun extends Weapons  {
         useLeftShift = fromTankID % 2 == 0; // for even tank id, use left shift
         lastFireTm = 0;
     }
-    KeyListener keyController = new MoveHandler(false);
-    KeyListener remoteModeKeyController = new MoveHandler(true);
+    KeyListener keyController = new MoveHandler();
 
     public void setKeyController(KeyListener keyController) {
         this.keyController = keyController;
     }
 
-    @Override
-    public KeyListener getNetModeKeyController() {
-        return remoteModeKeyController;
-    }
-
-    public void setRemoteModeKeyController(KeyListener remoteModeKeyController) {
-        this.remoteModeKeyController = remoteModeKeyController;
-    }
 
     @Override
     public KeyListener getKeyController() {
@@ -33,10 +24,6 @@ public class Gun extends Weapons  {
     }
 
     public class MoveHandler implements KeyListener {
-        boolean netMode;
-        public MoveHandler(boolean netWorkMode) {
-            this.netMode = netWorkMode;
-        }        
         @Override
         public void keyTyped(KeyEvent e) {
         }
@@ -47,9 +34,9 @@ public class Gun extends Weapons  {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT)
                 return;
             if (!useLeftShift && e.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT)
-                Fire(netMode);
+                Fire();
             else if (useLeftShift && e.getKeyLocation() == KeyEvent.KEY_LOCATION_LEFT)
-                Fire(netMode);
+                Fire();
         }
         @Override
         public void keyReleased(KeyEvent e) {

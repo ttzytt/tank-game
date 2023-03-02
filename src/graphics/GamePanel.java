@@ -25,6 +25,7 @@ public class GamePanel extends JPanel {
         }
     });
     private Set<ImagePanel> addedImg = ConcurrentHashMap.newKeySet();
+    private Set<KeyControllable> addedKeyControllable = ConcurrentHashMap.newKeySet();
 
     public int calcBlkPixSiz() {
         // calculate the size of each block in pixels
@@ -52,6 +53,7 @@ public class GamePanel extends JPanel {
                 if (a.getRemoveStat() == RemStat.TO_REM && a.getImg() != null) {
                     System.out.println("Removing " + a);
                     remove(a.getImg());
+                
                     addedImg.remove(a.getImg());
                     a.setRemStat(RemStat.REMED);
                     map.remEle(a);
@@ -74,6 +76,15 @@ public class GamePanel extends JPanel {
                 }
                 Helpers.validateAndRepaint(a.getImg());
             }
+
+            for (KeyControllable kc : map.getKeyControllables()) {
+                if (!addedKeyControllable.contains(kc)) {
+                    addKeyListener(kc.getKeyController());
+                    addedKeyControllable.add(kc);
+                    requestFocusInWindow();
+                    System.out.println("Added key controller " + kc);
+                }
+            }
         }
 
         // fill it with black background
@@ -82,7 +93,6 @@ public class GamePanel extends JPanel {
         for (GameElement a : eles) {
             a.setImgBound(calcBlkPixSiz()); // reset image size according the new pixel size
             Helpers.validateAndRepaint(a.getImg());
-
         }
         lstRefresh = System.currentTimeMillis();
     }
@@ -101,10 +111,8 @@ public class GamePanel extends JPanel {
         }
 
         for (KeyControllable kc : map.getKeyControllables()) {
-            if (!netMode)
                 addKeyListener(kc.getKeyController());
-            else
-                addKeyListener(kc.getNetModeKeyController());
+            addedKeyControllable.add(kc);
         }
     }
 

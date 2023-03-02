@@ -24,4 +24,9 @@ public class HPUpdMsg extends EvtMsg {
     public void setNewHp(int newHP) {
         this.newHp = newHP;
     }
+
+    @Override
+    public String toString(){
+        return "HPUpdMsg: id: " + id + " newHp: " + newHp;
+    }
 }

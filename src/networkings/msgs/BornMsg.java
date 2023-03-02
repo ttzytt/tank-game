@@ -17,4 +17,28 @@ public class BornMsg extends EvtMsg {
         this.pos = tk.getPos();
         this.dir = tk.getCurDir();
     }
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public Coord getPos() {
+        return pos;
+    }
+    public void setPos(Coord pos) {
+        this.pos = pos;
+    }
+    public Direct getDir() {
+        return dir;
+    }
+    public void setDir(Direct dir) {
+        this.dir = dir;
+    }
+
+    @Override
+    public String toString(){
+        return "BornMsg: id: " + id + " pos: " + pos + " dir: " + dir;
+    }
+
 }

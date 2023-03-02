@@ -20,6 +20,22 @@ public class GameMap {
     private ArrayList<Tank> tks = new ArrayList<>();
     private ArrayList<KeyControllable> keyControllables = new ArrayList<>();
 
+    public GameMap(String mapName, boolean networkMode) {
+        this.netMode = networkMode;
+        this.srcPath = mapName;
+        FileInputStream fin;
+        InputStreamReader reader;
+        BufferedReader buf_reader;
+        try {
+            fin = new FileInputStream(Consts.MAP_FOLDER + mapName);
+            reader = new InputStreamReader(fin);
+            buf_reader = new BufferedReader(reader);
+            parseMap(buf_reader);
+        } catch (Exception e) {
+            System.out.println("excetion thrown when loading map: " + e.getMessage());
+        }
+    }
+
     public Hashtable<Blks, BlkCoord> getBlkToPos() {
         return blkToPos;
     }
@@ -48,34 +64,18 @@ public class GameMap {
         this.tks = tks;
     }
 
-    public GameMap(String mapName, boolean networkMode) {
-        this.netMode = networkMode;
-        this.srcPath = mapName;
-        FileInputStream fin;
-        InputStreamReader reader;
-        BufferedReader buf_reader;
-        try {
-            fin = new FileInputStream(Consts.MAP_FOLDER + mapName);
-            reader = new InputStreamReader(fin);
-            buf_reader = new BufferedReader(reader);
-            parseMap(buf_reader);
-        } catch (Exception e) {
-            System.out.println("excetion thrown when loading map: " + e.getMessage());
-        }
-    }
-
     public ArrayList<GameElement> getEles() {
         ArrayList<GameElement> res = new ArrayList<>();
         // move all game elements from idTOEle to res
-        for (GameElement ele : idToEle.values()) {
-            res.add(ele);
-        }
-
+        res.addAll(idToEle.values());
         return res;
     }
 
     public GameElement getBlk(BlkCoord pos) {
-        return map[pos.x][pos.y];
+        if (pos.x >= 0 && pos.x < max_x && pos.y >= 0 && pos.y < max_y)
+            return map[pos.x][pos.y];
+        System.out.println("WARNING: getBlk out of bound");
+        return null;
     }
 
     public GameElement getBlk(int x, int y) {
@@ -188,6 +188,28 @@ public class GameMap {
         keyControllables.remove(kc);
     }
 
+    public BlkCoord getRandPos() {
+        int x = (int) (Math.random() * (max_x - 2)) + 1;
+        int y = (int) (Math.random() * (max_y - 2)) + 1;
+        return new BlkCoord(x, y);
+    }
+
+    public Tank addTankAtRandPos(int id) {
+        // should only be called by server
+        BlkCoord tmpPos = null;
+        while (getBlk((tmpPos = getRandPos())) != null) {
+            // find a empty block
+        } 
+        Tank nt = new Tank(new Coord(tmpPos), Direct.getRandDir(), id, false);
+        tks.add(nt);
+        idToEle.put(id, nt);
+        return nt;
+    }
+
+    public void setMap(GameElement[][] map) {
+        this.map = map;
+    }
+
     private void parseMap(BufferedReader bufr) {
         String curLine;
         try {
@@ -228,14 +250,14 @@ public class GameMap {
                             break;
                         case '1':
                             if (!netMode){
-                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId());
+                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId(), false);
                                 tks.add((Tank) map[cur_x + 1][cur_y + 1]);
                                 keyControllables.add((Tank)map[cur_x + 1][cur_y + 1]);
                             }
                             break;
                         case '2':
                             if (!netMode){
-                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.DOWN, ShVar.getNexId());
+                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.DOWN, ShVar.getNexId(),false);
                                 tks.add((Tank) map[cur_x + 1][cur_y + 1]);
                                 keyControllables.add((Tank)map[cur_x + 1][cur_y + 1]);
                             }
@@ -251,26 +273,5 @@ public class GameMap {
         } catch (Exception e) {
             System.out.println("exception thrown when parsing map: " + e.getMessage());
         }
-    }
-
-    public BlkCoord getRandPos() {
-        int x = (int) (Math.random() * (max_x - 2)) + 1;
-        int y = (int) (Math.random() * (max_y - 2)) + 1;
-        return new BlkCoord(x, y);
-    }
-
-    public Tank addTankAtRandPos(int id) {
-        BlkCoord tmpPos = null;
-        while (getBlk((tmpPos = getRandPos())) != null) {
-            // find a empty block
-        } 
-        Tank nt = new Tank(new Coord(tmpPos), Direct.getRandDir(), id);
-        tks.add(nt);
-        idToEle.put(id, nt);
-        return nt;
-    }
-
-    public void setMap(GameElement[][] map) {
-        this.map = map;
     }
 }

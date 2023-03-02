@@ -34,4 +34,9 @@ public class MovableUpdMsg extends EvtMsg {
     public void setVelo(Coord velo) {
         this.velo = velo;
     }
+
+    @Override
+    public String toString(){
+        return "MovableUpdMsg: id: " + id + " pos: " + pos + " velo: " + velo;
+    }
 }
