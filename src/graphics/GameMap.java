@@ -19,6 +19,8 @@ public class GameMap {
 
     private ArrayList<Tank> tks = new ArrayList<>();
     private ArrayList<KeyControllable> keyControllables = new ArrayList<>();
+    // private ArrayList<Bullet> blts = new ArrayList<>(); // TODO
+
 
     public GameMap(String mapName, boolean networkMode) {
         this.netMode = networkMode;
@@ -202,7 +204,7 @@ public class GameMap {
         } 
         Tank nt = new Tank(new Coord(tmpPos), Direct.getRandDir(), id, false);
         tks.add(nt);
-        idToEle.put(id, nt);
+        idToEle.put(id, nt );
         return nt;
     }
 

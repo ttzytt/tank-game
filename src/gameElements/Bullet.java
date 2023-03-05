@@ -4,9 +4,10 @@ import utils.*;
 public class Bullet extends MovableElement{
 
     int fromTankID;
-    public Bullet(Coord pos, float speed, Direct dir, int id, int tankID, boolean updPosToServer){
-        super(id, updPosToServer);
+    public Bullet(Coord pos, float speed, Direct dir, int id, int tankID){
+        super(id);
         fromTankID = tankID;
+        noColObjs.add(fromTankID);
         hp = -1;
         this.pos = pos;
         img = new ImagePanel(Consts.BULLET_IMG);
@@ -17,12 +18,13 @@ public class Bullet extends MovableElement{
     }
 
     // constructor with image 
-    public Bullet(Coord pos, float speed, Direct dir, ImagePanel img, int id, boolean updPosToServer) {
-        super(id, updPosToServer);
+    public Bullet(Coord pos, float speed, Direct dir, ImagePanel img, int id) {
+        super(id);
         this.pos = pos;
         this.img = img;
         damage = Consts.INIT_BULLET_DAMAGE;
         this.size = Consts.INIT_BULLET_SIZE;
+        curDir = dir;
         curVelo = new Coord(dir, speed);
     }
     boolean toRemove = false; 
@@ -36,7 +38,7 @@ public class Bullet extends MovableElement{
             pos = npos;
     }
 
-    public Bullet(BulletLaunchMsg msg, boolean updPosToServer){
-        this(msg.pos, msg.velo.getDirSpeed(), msg.velo.getDir(), msg.id, msg.tankId, updPosToServer);
+    public Bullet(BulletLaunchMsg msg){
+        this(msg.pos, msg.velo.getDirSpeed(), msg.velo.getDir(), msg.id, msg.tankId);
     }
 }

@@ -99,12 +99,12 @@ public abstract class Weapons implements KeyControllable{
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
-            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID, updPosToServer);
+            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
             bullet.addNoColObjs(fromTankID); 
             if (!updPosToServer)
                 map.addEle(bullet);
             else{
-                clntMsgToSend.add(new BulletLaunchMsg(bullet));
+                clntMsgToSend.add(new BulletLaunchMsg(bullet, fromTankID));
             }
             return bullet;
         }
@@ -115,7 +115,8 @@ public abstract class Weapons implements KeyControllable{
     Coord size;
     Coord curVelo;
 
-    public Weapons(Coord pos, float speed, int tankID) {
+    public Weapons(Coord pos, float speed, int tankID, boolean updPosToServer) {
+        this.updPosToServer = updPosToServer;
         fromTankID = tankID;
         // for odd tank id, use right shift
         // for even tank id use left shift

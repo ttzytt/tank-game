@@ -13,9 +13,20 @@ public class MovableUpdMsg extends EvtMsg {
         this.pos = pos;
         this.velo = velo;
     }
+
+    public MovableUpdMsg(int movableId, Coord pos, Coord velo, long prio){
+        this(movableId, pos, velo);
+        this.prio = prio;
+    }
+
     public MovableUpdMsg(MovableElement me){
         this(me.getId(), me.getPos(), me.getCurVelo());
     }
+
+    public MovableUpdMsg(MovableElement me, long prio) {
+        this(me.getId(), me.getPos(), me.getCurVelo(), prio);
+    }
+
     public int getId() {
         return id;
     }

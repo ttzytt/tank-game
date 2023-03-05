@@ -5,8 +5,8 @@ import java.awt.event.*;
 
 public class Gun extends Weapons  {
     boolean useLeftShift;
-    public Gun(Coord pos, int fromTankID) {
-        super(pos, Consts.INIT_BULLET_SPEED, fromTankID);
+    public Gun(Coord pos, int fromTankID, boolean updPosToServer) {
+        super(pos, Consts.INIT_BULLET_SPEED, fromTankID, updPosToServer);
         fireInterv = Consts.INIT_BULLET_FIRE_INTERV;
         useLeftShift = fromTankID % 2 == 0; // for even tank id, use left shift
         lastFireTm = 0;

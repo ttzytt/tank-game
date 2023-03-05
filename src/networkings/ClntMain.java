@@ -86,7 +86,7 @@ public class ClntMain {
             uid = dis.readInt();
             int servUDPport = dis.readInt();
             servUdpAddr = new InetSocketAddress(Consts.SERV_IP, servUDPport);
-            System.out.println("connected to the server");
+            System.out.println("connected to the server, uid=" + uid);
         } catch (Exception e) {
             System.out.println("failed to connect to the server");
             e.printStackTrace();
@@ -108,15 +108,16 @@ public class ClntMain {
         invokeSendServMsg();
         while(true){
             // process the received events
-            synchronized (msgRecved){
+            // synchronized (msgRecved)
                 while(msgRecved.size() > 0){
                     EvtMsg m = msgRecved.poll();
                     if (m instanceof BornMsg){
                         BornMsg bm = (BornMsg) m;
-                        map.addEle(new Tank(bm, true));
+                        map.addEle(new Tank(bm, uid == bm.getId()));
+                        // update only when the tank is equal to uid
                     } else if (m instanceof BulletLaunchMsg){
                         BulletLaunchMsg bm = (BulletLaunchMsg) m;
-                        map.addEle(new Bullet(bm, true));
+                        map.addEle(new Bullet(bm));
                     } else if (m instanceof HPUpdMsg){
                         HPUpdMsg hm = (HPUpdMsg) m;
                         map.getEleById(hm.getId()).setHp(hm.getNewHp());
@@ -129,7 +130,7 @@ public class ClntMain {
                     }
                 }
             }
-        }
+        // }
     }
     public static void main(String[] args) {
         new ClntMain();

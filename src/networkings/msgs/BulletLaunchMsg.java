@@ -17,8 +17,18 @@ public class BulletLaunchMsg extends EvtMsg{
         this.velo = velo;
     }
 
-    public BulletLaunchMsg(Bullet blt){
-        this(blt.getId(), blt.getId(), blt.getPos(), blt.getCurVelo());
+
+    public BulletLaunchMsg(int id, int tankId, Coord pos, Coord velo, long prio){
+        this(id, tankId, pos, velo);
+        this.prio = prio;
+    }
+
+    public BulletLaunchMsg(Bullet blt, int tankId){
+        this(blt.getId(), tankId, blt.getPos(), blt.getCurVelo());
+    }
+
+    public BulletLaunchMsg(Bullet blt, int tankId, long prio) {
+        this(blt.getId(), tankId, blt.getPos(), blt.getCurVelo(), prio);
     }
 
     public Coord getPos() {

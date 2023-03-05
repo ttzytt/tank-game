@@ -17,6 +17,7 @@ public class ShVar {
         return nexId++;
     }
     synchronized public static int getCurId(){
-        return nexId;
+        assert nexId > 0 : "getNexId have not been called before";
+        return nexId - 1;
     }
 }

@@ -10,9 +10,20 @@ public class RemEleMsg extends EvtMsg {
         super();
         this.id = id;
     }
+
+    public RemEleMsg(int id, long prio){
+        this(id);
+        this.prio = prio;
+    }
+
     public RemEleMsg(GameElement ge){
         this(ge.getId());
     }
+
+    public RemEleMsg(GameElement ge, long prio) {
+        this(ge.getId(), prio);
+    }
+
     public int getId() {
         return id;
     }

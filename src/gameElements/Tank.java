@@ -13,7 +13,7 @@ import java.awt.*;
 import java.awt.event.*;
 import static utils.ShVar.*;
 
-public class Tank extends MovableElement implements KeyControllable {
+public class Tank extends KeyControlMovable {
     float speed = Consts.INIT_TANK_SPEED;
 
     public ImagePanel getIup() {
@@ -59,18 +59,11 @@ public class Tank extends MovableElement implements KeyControllable {
     public MoveHandler keyController = new MoveHandler();
     ImagePanel iup, idn, ilf, irt;
     Weapons weapon;
-    boolean updPosToServer;
-    private Timer posUpdTimer;
-
-    @Override
-    public void setUpdPosToServer(boolean updPosToServer) {
-        this.updPosToServer = updPosToServer;
-    }
 
     public Tank(Coord initPos, Direct dir, int id, boolean updPosToServer) {
         super(id, updPosToServer);
         hp = Consts.INIT_TANK_HP;
-        weapon = new Gun(initPos, id);
+        weapon = new Gun(initPos, id, updPosToServer);
         map.addKeyControllable(weapon);
         curDir = Direct.UP;
         size = Helpers.getAspRate(Consts.T1_UP_IMG).mul(Consts.TANK_SIZE_RATIO);

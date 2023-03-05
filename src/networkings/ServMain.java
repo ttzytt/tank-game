@@ -1,23 +1,13 @@
 package networkings;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
 import java.util.Queue;
 import static utils.ShVar.*;
 import graphics.*;
 import networkings.msgs.*;
-
+import javax.swing.Timer;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,9 +20,9 @@ import gameElements.GameElement.RemStat;
 
 public class ServMain {
 
-    Queue<EvtMsg> msgRecved = new PriorityBlockingQueue<EvtMsg>();
+    Queue<EvtMsg> msgRecved = new PriorityBlockingQueue<>();
     // min heap, to process the msg that arrives earlier
-    Queue<EvtMsg> msgToBroadCast = new ConcurrentLinkedQueue<>();
+    Queue<EvtMsg> msgToBroadCast = new PriorityBlockingQueue<>();
     long lstRefresh = -1;
 
     public class Clnt {
@@ -57,7 +47,7 @@ public class ServMain {
                 EvtMsg newM = (EvtMsg) udpSock.recvObj(getAddr());
                 lstActive = System.currentTimeMillis();
                 msgRecved.add(newM);
-                synchronized(msgRecved){
+                synchronized (msgRecved) {
                     msgRecved.notify();
                 }
             }
@@ -120,22 +110,23 @@ public class ServMain {
                 DataInputStream dis = new DataInputStream(cSock.getInputStream());
                 int cUDPport = dis.readInt();
                 System.out.println("one client connected port = " + cUDPport);
-                Clnt clnt = new Clnt(getNexId(), cUDPport, cSock.getInetAddress().getHostAddress());
+                int tkId;
+                Clnt clnt = new Clnt(tkId = getNexId(), cUDPport, cSock.getInetAddress().getHostAddress());
                 clnts.add(clnt);
                 clnt.invokeRecvMsg();
                 DataOutputStream dos = new DataOutputStream(cSock.getOutputStream());
-                dos.writeInt(getCurId());
+                dos.writeInt(tkId);
                 dos.writeInt(ServConsts.UDP_PORT);
-                mp.addTankAtRandPos(getCurId());
-    
+                mp.addTankAtRandPos(tkId);
+
                 // tell the client about all the exisiting palyers
                 for (GameElement ele : mp.getEles()) {
                     if (ele instanceof Tank) {
-                        msgToBroadCast.add(new BornMsg((Tank) ele));
+                        msgToBroadCast.add(new BornMsg((Tank) ele, 0));
                     }
                 }
 
-                synchronized(msgToBroadCast){
+                synchronized (msgToBroadCast) {
                     msgToBroadCast.notify();
                 }
             } catch (Exception e) {
@@ -170,7 +161,7 @@ public class ServMain {
                 if (other.isHPchanged()) {
                     msgToBroadCast.add(new HPUpdMsg(other));
                     other.setHPchanged(false);
-                    synchronized(msgToBroadCast){
+                    synchronized (msgToBroadCast) {
                         msgToBroadCast.notify();
                     }
                 }
@@ -178,7 +169,7 @@ public class ServMain {
         }
         if (ele.isHPchanged()) {
             msgToBroadCast.add(new HPUpdMsg(ele));
-            synchronized(msgToBroadCast){
+            synchronized (msgToBroadCast) {
                 msgToBroadCast.notify();
             }
             ele.setHPchanged(false);
@@ -198,51 +189,72 @@ public class ServMain {
         invokeSendMsg();
         invokeAcceptClient();
 
-        while (true) {
-            // game loop
-            // update position of players and create new bullets
-            synchronized (msgRecved) {
-                // prevent continuous increase of msgRecved
-                while (msgRecved.size() > 0) {
-                    EvtMsg m = msgRecved.poll();
-                    // System.out.println("cur evt= " + m);
-                    MovableElement me = null;
-                    if (m instanceof MovableUpdMsg) {
-                        MovableUpdMsg mmsg = (MovableUpdMsg) m;
-                        me = (MovableElement) mp.getEleById(mmsg.id);
-                        me.setCurVelo(mmsg.velo);
-                    } else if (m instanceof BulletLaunchMsg) {
-                        BulletLaunchMsg bmsg = (BulletLaunchMsg) m;
-                        mp.addEle(me = new Bullet(bmsg, false));
-                        bmsg.id = getNexId(); // assign id to the bullet
-                        msgToBroadCast.add(bmsg);
-                        synchronized(msgToBroadCast){
-                            msgToBroadCast.notify();
+        Timer procTimer = new Timer(ServConsts.PROC_INTERV, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                synchronized (msgRecved) {
+                    // prevent continuous increase of msgRecved
+                    // between each process, need to wait for some time
+                    // because it is possible to first receive move msg then create msg
+                    while (msgRecved.size() > 0) {
+                        EvtMsg m = msgRecved.poll();
+                        // System.out.println("cur evt= " + m);
+                        MovableElement me = null;
+                        if (m instanceof MovableUpdMsg) {
+                            MovableUpdMsg mmsg = (MovableUpdMsg) m;
+                            me = (MovableElement) mp.getEleById(mmsg.id);
+                            me.setCurVelo(mmsg.velo);
+                            me.setCurDir(mmsg.velo.getDir());
+                            // System.out.println(mmsg + " type= " + me);
+                        } else if (m instanceof BulletLaunchMsg) {
+                            BulletLaunchMsg bmsg = (BulletLaunchMsg) m;
+                            bmsg.id = getNexId(); // assign id to the bullet
+                            mp.addEle(me = new Bullet(bmsg));
+                            System.out.println("serv broadcasted bullet with id = " + bmsg.id);
+                            bmsg.setPrio(0); // need to create something before update them
+                            msgToBroadCast.add(bmsg);
+                            synchronized (msgToBroadCast) {
+                                msgToBroadCast.notify();
+                            }
+                        } else {
+                            throw new RuntimeException("only two types of msg are allowed by client");
                         }
-                    } else {
-                        throw new RuntimeException("only two types of msg are allowed by client");
                     }
+                }
+
+                ArrayList<GameElement> eles = mp.getEles();
+                // System.out.println("start processcollision");
+                for (GameElement a : eles) {
+
                     long interval = lstRefresh == -1 ? 0 : System.currentTimeMillis() - lstRefresh;
-                    lstRefresh = System.currentTimeMillis();
-                    if (!processCollision(me)) {
-                        me.mov(interval);
-                        msgToBroadCast.add(new MovableUpdMsg(me));
-                        synchronized(msgToBroadCast){
+                    if (a.getRemoveStat() == RemStat.TO_REM) {
+                        System.out.println("serv broadcasted rem msg for id = " + a.getId() + " type = "
+                                + a.getClass().getSimpleName());
+                        msgToBroadCast.add(new RemEleMsg(a));
+                        synchronized (msgToBroadCast) {
                             msgToBroadCast.notify();
+                        }
+                        mp.remEle(a);
+                    }
+                    if (a instanceof MovableElement) {
+                        MovableElement ma = (MovableElement) a;
+                        if (!processCollision(a)) {
+                            if (a instanceof Bullet) {
+                                System.out.println("serv broadcasted bullet with id = " + a.getId() + " velo " + ma.getCurVelo() );
+                            }
+
+                            ma.mov(interval);
+                            msgToBroadCast.add(new MovableUpdMsg(ma));
+                            synchronized (msgToBroadCast) {
+                                msgToBroadCast.notify();
+                            }
                         }
                     }
                 }
+                lstRefresh = System.currentTimeMillis();
             }
-            for (GameElement a : mp.getEles()) {
-                if (a.getRemoveStat() == RemStat.TO_REM) {
-                    msgToBroadCast.add(new RemEleMsg(a));
-                    synchronized(msgToBroadCast){
-                        msgToBroadCast.notify();
-                    }
-                    mp.remEle(a);
-                }
-            }
-        }
+        });
+        procTimer.start();
 
     }
 

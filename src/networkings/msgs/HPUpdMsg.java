@@ -9,9 +9,20 @@ public class HPUpdMsg extends EvtMsg {
         this.id = id;
         this.newHp = newHP;
     }
+
+    public HPUpdMsg(int id, int newHP, long prio){
+        this(id, newHP);
+        this.prio = prio;
+    }
+
     public HPUpdMsg(GameElement ge){
         this(ge.getId(), ge.getHp());
     }
+
+    public HPUpdMsg(GameElement ge, long prio) {
+        this(ge.getId(), ge.getHp(), prio);
+    }
+
     public int getId() {
         return id;
     }

@@ -60,5 +60,5 @@ public class Consts {
 
     // ------------ networking settings ------------
     public final static String SERV_IP = "127.0.0.1";
-    public final static int MOVABLE_POS_UPD_INTERV = 15; // 15 ms
+    public final static int MOVABLE_POS_UPD_INTERV = 20; // ms
 }   

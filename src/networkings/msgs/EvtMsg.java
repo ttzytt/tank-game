@@ -3,18 +3,22 @@ package networkings.msgs;
 import java.io.Serializable;
 
 abstract public class EvtMsg implements Serializable, Comparable{
-    long evtTm = 0; // time when the event happend
+    long prio = 0; // usually time, smaller -> more important
 
     EvtMsg () {
-        evtTm = System.currentTimeMillis();
+        prio = System.currentTimeMillis();
     }
 
-    public long getEvtTm() {
-        return evtTm;
+    EvtMsg (long prio) {
+        this.prio = prio;
     }
 
-    public void setEvtTm(long evtTm) {
-        this.evtTm = evtTm;
+    public long getPrio() {
+        return prio;
+    }
+
+    public void setPrio(long evtTm) {
+        this.prio = evtTm;
     }
 
     @Override
@@ -22,9 +26,9 @@ abstract public class EvtMsg implements Serializable, Comparable{
     public int compareTo(Object o) {
         if (o instanceof EvtMsg) {
             EvtMsg other = (EvtMsg) o;
-            if (this.evtTm > other.evtTm) {
+            if (this.prio > other.prio) {
                 return 1;
-            } else if (this.evtTm < other.evtTm) {
+            } else if (this.prio < other.prio) {
                 return -1;
             } else {
                 return 0;

@@ -11,12 +11,24 @@ public class BornMsg extends EvtMsg {
         this.pos = pos;
         this.dir = dir;
     }
+
+    public BornMsg(int id, Coord pos, Direct dir, long prio){
+        this(id, pos, dir);
+        this.prio = prio;
+    }
+
     public BornMsg(Tank tk){
         super();
         this.id = tk.getId();
         this.pos = tk.getPos();
         this.dir = tk.getCurDir();
     }
+
+    public BornMsg(Tank tk, long prio) {
+        this(tk);
+        this.prio = prio;
+    }
+
     public int getId() {
         return id;
     }
