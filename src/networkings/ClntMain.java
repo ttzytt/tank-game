@@ -113,6 +113,8 @@ public class ClntMain {
                     EvtMsg m = msgRecved.poll();
                     if (m instanceof BornMsg){
                         BornMsg bm = (BornMsg) m;
+                        if (map.getIdToEle().contains(bm.getId()))
+                            continue;
                         map.addEle(new Tank(bm, uid == bm.getId()));
                         // update only when the tank is equal to uid
                     } else if (m instanceof BulletLaunchMsg){

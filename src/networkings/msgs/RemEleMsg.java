@@ -35,4 +35,6 @@ public class RemEleMsg extends EvtMsg {
     public String toString(){
         return "RemEleMsg: id: " + id;
     }
+
+    public static final long serialVersionUID = 114514 + 1;
 }

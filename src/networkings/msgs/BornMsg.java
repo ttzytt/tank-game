@@ -52,5 +52,6 @@ public class BornMsg extends EvtMsg {
     public String toString(){
         return "BornMsg: id: " + id + " pos: " + pos + " dir: " + dir;
     }
-
+    
+    public static final long serialVersionUID = 114514 + 6;
 }

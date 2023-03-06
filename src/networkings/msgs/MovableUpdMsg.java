@@ -50,4 +50,6 @@ public class MovableUpdMsg extends EvtMsg {
     public String toString(){
         return "MovableUpdMsg: id: " + id + " pos: " + pos + " velo: " + velo;
     }
+
+    public static final long serialVersionUID = 114514 + 2;
 }

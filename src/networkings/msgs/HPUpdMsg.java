@@ -40,4 +40,5 @@ public class HPUpdMsg extends EvtMsg {
     public String toString(){
         return "HPUpdMsg: id: " + id + " newHp: " + newHp;
     }
+    public static final long serialVersionUID = 114514 + 3;
 }

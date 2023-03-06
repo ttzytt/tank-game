@@ -68,4 +68,6 @@ public class BulletLaunchMsg extends EvtMsg{
         return "BulletLaunchMsg: id: " + id + " tankId: " + tankId + " pos: " + pos + " velo: " + velo;
     }
 
+    public static final long serialVersionUID = 114514 + 5;
+
 }

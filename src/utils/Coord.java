@@ -160,4 +160,6 @@ public class Coord implements Serializable{
         Coord c = (Coord)o;
         return c.x == x && c.y == y;
     }
+
+    public static final long serialVersionUID = 114514;
 }
