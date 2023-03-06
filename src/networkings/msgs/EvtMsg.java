@@ -37,4 +37,5 @@ abstract public class EvtMsg implements Serializable, Comparable{
             return 0;
         }
     }
+    
 }
