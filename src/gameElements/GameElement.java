@@ -17,7 +17,7 @@ abstract public class GameElement {
         GameElement lowerOpp, midOpp, upperOpp; // the lower, middle, upper opposite side of the blk
 
         TankBlkCollisionAuxInfo(Blks b, Tank t) {
-            Direct curDir = t.curDir;
+            Direct curDir = t.dir;
             // if the tank is moving horizontally, check if its y1 y2 is in the range of the
             // block
             // if the tank is moving vertically, check if its x1 x2 is in the range of the
@@ -43,6 +43,15 @@ abstract public class GameElement {
                 GameElement tmp = lowerOpp;
                 lowerOpp = upperOpp;
                 upperOpp = tmp;
+            }
+        }
+
+        public class GEposRelationAuxInfo{
+            boolean isOtherEnclosed;
+            boolean isOtherOffsetLowerOrLeft;
+            boolean isOtherOffsetHigherOrRight;
+            GEposRelationAuxInfo(GameElement other){
+                // TODO implement this, and implement another version with relative direction in movable element
             }
         }
 
@@ -132,9 +141,19 @@ abstract public class GameElement {
     ArrayList<Integer> noColObjs = new ArrayList<Integer>(); // the objects that should not be collided with (stored the
                                                              // id)
 
+    ArrayList<Integer> noHpChangeObjs = new ArrayList<Integer>(); // the objects that should not change hp (stored the id)
+
     GameElement lowerOpp, midOpp, upperOpp; // the lower, middle, upper opposite side of the blk
 
-    boolean HPchanged = false;
+    boolean hpChanged = false;
+
+    public ArrayList<Integer> getNoHpChangeObjs() {
+        return noHpChangeObjs;
+    }
+
+    public void setNoHpChangeObjs(ArrayList<Integer> noHpChangeObjs) {
+        this.noHpChangeObjs = noHpChangeObjs;
+    }
 
     ImagePanel img;
 
@@ -142,13 +161,16 @@ abstract public class GameElement {
     Coord size = new Coord(0, 0);
 
     int hp, damage;
-
     public int id;
 
     public RemStat removeStat = RemStat.NOT_REM;
 
     public GameElement(int id) {
         this.id = id;
+    }
+
+    public void setRemoveStat(RemStat removeStat) {
+        this.removeStat = removeStat;
     }
 
     public ArrayList<Integer> getNoColObjs() {
@@ -159,9 +181,22 @@ abstract public class GameElement {
         this.noColObjs = noColObjs;
     }
 
-    public void addNoColObjs(int noColObj) {
+    public void addNoColObj(int noColObj) {
         this.noColObjs.add(noColObj);
     }
+
+    public void remNoColObj(int noColObj) {
+        this.noColObjs.remove(noColObj);
+    }
+
+    public void addNoHpChangeObj(int noHpChangeObj) {
+        this.noHpChangeObjs.add(noHpChangeObj);
+    }
+
+    public void remNoHpChangeObj(int noHpChangeObj) {
+        this.noHpChangeObjs.remove(noHpChangeObj);
+    }
+
 
     public GameElement getLowerOpp() {
         return lowerOpp;
@@ -187,12 +222,12 @@ abstract public class GameElement {
         this.upperOpp = upperOpp;
     }
 
-    public boolean isHPchanged() {
-        return HPchanged;
+    public boolean isHpChanged() {
+        return hpChanged;
     };
 
-    public void setHPchanged(boolean hPchanged) {
-        HPchanged = hPchanged;
+    public void setHpChanged(boolean hPchanged) {
+        hpChanged = hPchanged;
     }
 
     public int getId() {
@@ -266,14 +301,21 @@ abstract public class GameElement {
     }
 
     protected boolean processCollision(GameElement other) {
-
+        if (!noHpChangeObjs.contains(other.getId()) && 
+            !other.getNoHpChangeObjs().contains(getId())
+        )
         hp -= other.getDamage();
         if (other.getDamage() > 0)
-            HPchanged = true;
+            hpChanged = true;
         if (hp <= 0) {
             removeStat = RemStat.TO_REM;
             hp = -2;
         }
         return true;
     }
+
+    public BoundingBox getBox(){
+        return new BoundingBox(pos, size);
+    }
+
 }

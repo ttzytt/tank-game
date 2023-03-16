@@ -24,7 +24,7 @@ public class ClntMain {
     InetSocketAddress servUdpAddr, servIPAddr;
     UDPwrap udpSock;
     int uid; // user id
-    GUI gui = new GUI(true);
+    GUI gui = new GUI();
     public void recvServMsg() {
         while (true) {
             EvtMsg newM = (EvtMsg) udpSock.recvObj(servUdpAddr);
@@ -113,7 +113,7 @@ public class ClntMain {
                     EvtMsg m = msgRecved.poll();
                     if (m instanceof BornMsg){
                         BornMsg bm = (BornMsg) m;
-                        if (map.getIdToEle().contains(bm.getId()))
+                        if (map.getEleById(bm.id) != null) // already added this tank
                             continue;
                         map.addEle(new Tank(bm, uid == bm.getId()));
                         // update only when the tank is equal to uid
@@ -122,13 +122,20 @@ public class ClntMain {
                         map.addEle(new Bullet(bm));
                     } else if (m instanceof HPUpdMsg){
                         HPUpdMsg hm = (HPUpdMsg) m;
-                        map.getEleById(hm.getId()).setHp(hm.getNewHp());
+                        GameElement ge = map.getEleById(hm.getId());
+                        if (ge == null) continue;
+                        ge.setHp(hm.getNewHp());
                     } else if (m instanceof MovableUpdMsg){
                         MovableUpdMsg mm = (MovableUpdMsg) m;
-                        map.getEleById(mm.getId()).setPos(mm.getPos());
+                        MovableElement me = (MovableElement)map.getEleById(mm.getId());
+                        if (me == null) continue;
+                        me.setPos(mm.getPos());
+                        me.setDir(mm.getVelo().getDir());
                     } else if (m instanceof RemEleMsg){
                         RemEleMsg rm = (RemEleMsg) m;
-                        map.getEleById(rm.getId()).setRemStat(RemStat.TO_REM);
+                        GameElement ge = map.getEleById(rm.getId());
+                        if (ge == null) continue;
+                        ge.setRemStat(RemStat.TO_REM);
                     }
                 }
             }

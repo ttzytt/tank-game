@@ -12,7 +12,7 @@ public abstract class Weapons implements KeyControllable{
     Direct curDir = Direct.UP;
     int fromTankID;
     boolean updPosToServer;
-
+    Class<Bullet> bulletType;
 
     public long getLastFireTm() {
         return lastFireTm;
@@ -99,8 +99,8 @@ public abstract class Weapons implements KeyControllable{
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
-            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
-            bullet.addNoColObjs(fromTankID); 
+            Bullet bullet = new AutoBullet(pos, speed, curDir, getNexId(), fromTankID, .3f);
+            bullet.addNoColObj(fromTankID);
             if (!updPosToServer)
                 map.addEle(bullet);
             else{

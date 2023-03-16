@@ -13,17 +13,33 @@ public class GameMap {
     private GameElement[][] map;
     private String srcPath;
     private int max_x, max_y; // max possible x and y in the whole map
-    private boolean netMode;
     private Hashtable<Blks, BlkCoord> blkToPos = new Hashtable<>();
     private Hashtable<Integer, GameElement> idToEle = new Hashtable<>();
 
     private ArrayList<Tank> tks = new ArrayList<>();
+
+    public ArrayList<Bullet> getBlts() {
+        return blts;
+    }
+
+    public void setBlts(ArrayList<Bullet> blts) {
+        this.blts = blts;
+    }
+
+    public ArrayList<MovableElement> getMovables() {
+        return movables;
+    }
+
+    public void setMovables(ArrayList<MovableElement> movables) {
+        this.movables = movables;
+    }
+
     private ArrayList<KeyControllable> keyControllables = new ArrayList<>();
-    // private ArrayList<Bullet> blts = new ArrayList<>(); // TODO
+    private ArrayList<Bullet> blts = new ArrayList<>();
+    private ArrayList<MovableElement> movables = new ArrayList<>();
+    private ArrayList<DbgBox> dbgBoxes = new ArrayList<>();    
 
-
-    public GameMap(String mapName, boolean networkMode) {
-        this.netMode = networkMode;
+    public GameMap(String mapName) {
         this.srcPath = mapName;
         FileInputStream fin;
         InputStreamReader reader;
@@ -127,14 +143,6 @@ public class GameMap {
         map[pos.x][pos.y] = null;
     }
 
-    public boolean isNetMode() {
-        return netMode;
-    }
-
-    public void setNetMode(boolean netMode) {
-        this.netMode = netMode;
-    }
-
     public ArrayList<KeyControllable> getKeyControllables() {
         return keyControllables;
     }
@@ -143,68 +151,125 @@ public class GameMap {
         this.keyControllables = keyControllables;
     }
 
-    public void remTank(Tank tk) {
-        tks.remove(tk);
-        idToEle.remove(tk.getId());
-    }
-
     public void remEle(GameElement ele) {
         if (ele instanceof Blks) {
             remBlk((Blks) ele);
-        } else if (ele instanceof Tank) {
-            remTank((Tank) ele);
-        } else {
-            idToEle.remove(ele.getId());
+        }
+        if (ele instanceof Tank) {
+            tks.remove((Tank) ele);
+        }
+        if (ele instanceof Bullet) {
+            blts.remove(ele);
+        }
+        if (ele instanceof MovableElement) {
+            movables.remove(ele);
         }
         if (ele instanceof KeyControllable) {
-            keyControllables.remove((KeyControllable)ele);
+            keyControllables.remove((KeyControllable) ele);
+        }
+
+        if (ele instanceof DbgBox) {
+            dbgBoxes.remove((DbgBox) ele);
+        }
+
+        idToEle.remove(ele.getId());
+    }
+
+    public void remByType(Class<?> cls) {
+        ArrayList<GameElement> eles = getEles();
+        for (GameElement ele : eles) {
+            if (ele.getClass() == cls) {
+                System.out.println("removing " + ele);
+                remEle(ele);
+            }
         }
     }
 
-    public void remEle(int id){
+
+    public ArrayList<DbgBox> getDbgBoxes() {
+        return dbgBoxes;
+    }
+
+    public void setDbgBoxes(ArrayList<DbgBox> dbgBoxes) {
+        this.dbgBoxes = dbgBoxes;
+    }
+
+    public void remEle(int id) {
         GameElement ele = idToEle.get(id);
-        if(ele != null){
+        if (ele != null) {
             remEle(ele);
         }
     }
 
-    public void addEle(GameElement ele){
-        if(ele instanceof Blks){
+    public void addEle(GameElement ele) {
+        assert ! (ele instanceof BoundingBox) : "cannot add bounding box to map";
+
+        if (ele instanceof Blks) {
             Blks blk = (Blks) ele;
             blkToPos.put(blk, blk.getIntPos());
             map[blk.getIntPos().x][blk.getIntPos().y] = blk;
-        }else if(ele instanceof Tank){
+        }
+        if (ele instanceof Tank) {
+            for (Tank tk : tks){
+                ele.addNoHpChangeObj(tk.getId());
+            }
             tks.add((Tank) ele);
         }
-        idToEle.put(ele.getId(), ele);
+        if (ele instanceof Bullet) {
+            blts.add((Bullet) ele);
+        }
+        if (ele instanceof MovableElement) {
+            movables.add((MovableElement) ele);
+        }
+
+        if (ele instanceof DbgBox) {
+            dbgBoxes.add((DbgBox) ele);
+        }
+
         if (ele instanceof KeyControllable) {
             keyControllables.add((KeyControllable) ele);
         }
+
+        idToEle.put(ele.getId(), ele);
     }
 
-    public void addKeyControllable(KeyControllable kc){
+    public void addKeyControllable(KeyControllable kc) {
         keyControllables.add(kc);
     }
 
-    public void remKeyControllable(KeyControllable kc){
+    public void remKeyControllable(KeyControllable kc) {
         keyControllables.remove(kc);
     }
 
-    public BlkCoord getRandPos() {
+    public BlkCoord getRandIntPos() {
         int x = (int) (Math.random() * (max_x - 2)) + 1;
         int y = (int) (Math.random() * (max_y - 2)) + 1;
         return new BlkCoord(x, y);
     }
 
+    public Coord getRandPos() {
+        float x = (float) (Math.random() * (max_x - 2)) + 1;
+        float y = (float) (Math.random() * (max_y - 2)) + 1;
+        return new Coord(x, y);
+    }
+
+    public boolean isIntersecting(GameElement ele) {
+        for (GameElement other : getEles()) {
+            if (ele.intersect(other))
+                return true;
+        }
+        return false;
+    }
+
     public Tank addTankAtRandPos(int id) {
         // should only be called by server
-        BlkCoord tmpPos = null;
-        while (getBlk((tmpPos = getRandPos())) != null) {
-            // find a empty block
-        } 
-        Tank nt = new Tank(new Coord(tmpPos), Direct.getRandDir(), id, false);
+        Coord tmpPos = null;
+        while (isIntersecting(new BoundingBox(tmpPos = getRandPos(), new Coord(1, 1)))) {
+        }
+
+        Tank nt = new Tank(tmpPos, Direct.getRandDir(), id, false);
         tks.add(nt);
-        idToEle.put(id, nt );
+        idToEle.put(id, nt);
         return nt;
     }
 
@@ -244,24 +309,28 @@ public class GameMap {
                         case 'O':
                             break;
                         case 'D':
-                            map[cur_x + 1][cur_y + 1] = new DestrBlk(new BlkCoord(cur_x + 1, cur_y + 1), ShVar.getNexId());
-                            // top left corner, so + 1 for y
+                            map[cur_x + 1][cur_y + 1] = new DestrBlk(new BlkCoord(cur_x + 1, cur_y + 1),
+                                    ShVar.getNexId());
+                            // top left corner, `so + 1 for y
                             break;
                         case 'S':
-                            map[cur_x + 1][cur_y + 1] = new SolidBlk(new BlkCoord(cur_x + 1, cur_y + 1), ShVar.getNexId());
+                            map[cur_x + 1][cur_y + 1] = new SolidBlk(new BlkCoord(cur_x + 1, cur_y + 1),
+                                    ShVar.getNexId());
                             break;
                         case '1':
-                            if (!netMode){
-                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId(), false);
-                                tks.add((Tank) map[cur_x + 1][cur_y + 1]);
-                                keyControllables.add((Tank)map[cur_x + 1][cur_y + 1]);
+                            if (!Consts.IS_NET_MODE) {
+                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP,
+                                        ShVar.getNexId(), false);
+                                addEle( map[cur_x + 1][cur_y + 1]);
+                                keyControllables.add((Tank) map[cur_x + 1][cur_y + 1]);
                             }
                             break;
                         case '2':
-                            if (!netMode){
-                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.DOWN, ShVar.getNexId(),false);
-                                tks.add((Tank) map[cur_x + 1][cur_y + 1]);
-                                keyControllables.add((Tank)map[cur_x + 1][cur_y + 1]);
+                            if (!Consts.IS_NET_MODE) {
+                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.DOWN,
+                                        ShVar.getNexId(), false);
+                                addEle( map[cur_x + 1][cur_y + 1]);
+                                keyControllables.add((Tank) map[cur_x + 1][cur_y + 1]);
                             }
                             break;
                     }

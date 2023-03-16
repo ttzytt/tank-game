@@ -8,8 +8,8 @@ import networkings.msgs.*;
 import static utils.ShVar.*;
 
 public abstract class MovableElement extends GameElement {
-    Coord curVelo;
-    Direct curDir;
+    Coord curVelo = Coord.zero();
+    Direct dir;
 
     public MovableElement(int id) {
         super(id);
@@ -31,12 +31,15 @@ public abstract class MovableElement extends GameElement {
         this.curVelo = curVelo;
     }
 
-    public Direct getCurDir() {
-        return curDir;
+    public Direct getDir() {
+        return dir;
     }
 
-    public void setCurDir(Direct curDir) {
-        this.curDir = curDir;
+    public void setDir(Direct curDir) {
+        this.dir = curDir;
     }
 
+    public BoundingBox getBox(){
+        return new BoundingBox(this);
+    }
 }

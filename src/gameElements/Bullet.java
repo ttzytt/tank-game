@@ -2,10 +2,11 @@ package gameElements;
 import networkings.msgs.*;
 import utils.*;
 public class Bullet extends MovableElement{
-
+    float speed;
     int fromTankID;
     public Bullet(Coord pos, float speed, Direct dir, int id, int tankID){
         super(id);
+        this.speed = speed;
         fromTankID = tankID;
         noColObjs.add(fromTankID);
         hp = -1;
@@ -20,11 +21,12 @@ public class Bullet extends MovableElement{
     // constructor with image 
     public Bullet(Coord pos, float speed, Direct dir, ImagePanel img, int id) {
         super(id);
+        this.speed = speed;
         this.pos = pos;
         this.img = img;
         damage = Consts.INIT_BULLET_DAMAGE;
         this.size = Consts.INIT_BULLET_SIZE;
-        curDir = dir;
+        dir = dir;
         curVelo = new Coord(dir, speed);
     }
     boolean toRemove = false; 

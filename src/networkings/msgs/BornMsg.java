@@ -21,7 +21,7 @@ public class BornMsg extends EvtMsg {
         super();
         this.id = tk.getId();
         this.pos = tk.getPos();
-        this.dir = tk.getCurDir();
+        this.dir = tk.getDir();
     }
 
     public BornMsg(Tank tk, long prio) {

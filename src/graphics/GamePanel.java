@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 
 public class GamePanel extends JPanel {
-    boolean netMode;
     private GameMap map;
     private long lstRefresh = -1;
     private Timer timer = new Timer(Consts.FRAME_INTERV, new ActionListener() {
@@ -64,10 +63,14 @@ public class GamePanel extends JPanel {
                     addedImg.add(a.getImg());
                 }
 
-                if (!netMode && a instanceof MovableElement) {
+                if (!Consts.IS_NET_MODE && a instanceof MovableElement) {
                     boolean intersected = false;
+                    MovableElement ma = (MovableElement) a;
+                    BoundingBox box = new BoundingBox(ma);
+                    box.mov(inter * 2);
                     for (GameElement b : eles) {
-                        if (a.intersect(b)) {
+                        if (b instanceof DbgBox) continue;
+                        if (box.intersect(b)) {
                             intersected |= GameElement.processCollision(a, b);
                         }
                     }
@@ -97,10 +100,10 @@ public class GamePanel extends JPanel {
         lstRefresh = System.currentTimeMillis();
     }
 
-    public GamePanel(boolean netMode) {
-        this.netMode = netMode;
+    public GamePanel() {
+        ShVar.gp = this;
         timer.start();
-        map = new GameMap("default.txt", netMode);
+        map = new GameMap("default.txt");
         lstRefresh = System.currentTimeMillis();
         setLayout(null);
         for (GameElement b : map.getEles()) {

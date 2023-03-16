@@ -11,6 +11,8 @@ public class Consts {
     public final static ImagePanel SOLID_BLK_IMG = new ImagePanel(SOLID_BLK_IMG_PATH);
     public final static String EMPTY_BLK_IMG_PATH = IMG_FOLDER + "empty_brick.jpg";
     public final static ImagePanel EMPTY_BLK_IMG = new ImagePanel(EMPTY_BLK_IMG_PATH);
+    public final static String TRANSPARENT_IMG = IMG_FOLDER + "transparent.png";
+    public final static ImagePanel TRANSPARENT_IMG_PANEL = new ImagePanel(TRANSPARENT_IMG);
 
     public final static String T1_LEFT_IMG_PATH = IMG_FOLDER + "player1_tank_left.png";
     public final static ImagePanel T1_LEFT_IMG = new ImagePanel(T1_LEFT_IMG_PATH);
@@ -59,6 +61,9 @@ public class Consts {
 
 
     // ------------ networking settings ------------
-    public final static String SERV_IP = "172.16.101.142";
+    public final static String SERV_IP = "127.0.0.1";
     public final static int MOVABLE_POS_UPD_INTERV = 20; // ms
+    public static boolean IS_NET_MODE = true;
+
+    // ------------ bot settings ------------
 }   

@@ -100,7 +100,7 @@ public class ServMain {
     }
 
     ArrayList<Clnt> clnts = new ArrayList<>();
-    GameMap mp = new GameMap("withoutTank.txt", true);
+    GameMap mp = new GameMap("withoutTank.txt");
 
     public void acceptClnt() {
         while (true) {
@@ -120,10 +120,8 @@ public class ServMain {
                 mp.addTankAtRandPos(tkId);
 
                 // tell the client about all the exisiting palyers
-                for (GameElement ele : mp.getEles()) {
-                    if (ele instanceof Tank) {
-                        msgToBroadCast.add(new BornMsg((Tank) ele, 0));
-                    }
+                for (Tank tk : mp.getTks()) {
+                    msgToBroadCast.add(new BornMsg((Tank) tk, 0));
                 }
 
                 synchronized (msgToBroadCast) {
@@ -153,26 +151,31 @@ public class ServMain {
         t.start();
     }
 
-    boolean processCollision(GameElement ele) {
+    boolean processCollision(MovableElement ele, long inter) {
         boolean collided = false;
-        for (GameElement other : mp.getEles()) {
-            if (ele.intersect(other)) {
+        BoundingBox box = new BoundingBox(ele);
+        // box.mov(inter);
+        for (GameElement other : mp. getEles()) {
+            if (box.intersect(other)) {
                 collided |= GameElement.processCollision(ele, other);
-                if (other.isHPchanged()) {
+                if (GameElement.processCollision(ele, other)){
+                    System.out.println(ele + " collide with " + other);
+                }
+                if (other.isHpChanged()) {
                     msgToBroadCast.add(new HPUpdMsg(other));
-                    other.setHPchanged(false);
+                    other.setHpChanged(false);
                     synchronized (msgToBroadCast) {
                         msgToBroadCast.notify();
                     }
                 }
             }
         }
-        if (ele.isHPchanged()) {
+        if (ele.isHpChanged()) {
             msgToBroadCast.add(new HPUpdMsg(ele));
             synchronized (msgToBroadCast) {
                 msgToBroadCast.notify();
             }
-            ele.setHPchanged(false);
+            ele.setHpChanged(false);
         }
         return collided;
     }
@@ -203,13 +206,15 @@ public class ServMain {
                         if (m instanceof MovableUpdMsg) {
                             MovableUpdMsg mmsg = (MovableUpdMsg) m;
                             me = (MovableElement) mp.getEleById(mmsg.id);
+                            if (me == null) continue;
                             me.setCurVelo(mmsg.velo);
-                            me.setCurDir(mmsg.velo.getDir());
+                            me.setDir(mmsg.velo.getDir());
                             // System.out.println(mmsg + " type= " + me);
                         } else if (m instanceof BulletLaunchMsg) {
                             BulletLaunchMsg bmsg = (BulletLaunchMsg) m;
                             bmsg.id = getNexId(); // assign id to the bullet
                             mp.addEle(me = new Bullet(bmsg));
+                            if (me == null) continue;
                             System.out.println("serv broadcasted bullet with id = " + bmsg.id);
                             bmsg.setPrio(0); // need to create something before update them
                             msgToBroadCast.add(bmsg);
@@ -238,11 +243,7 @@ public class ServMain {
                     }
                     if (a instanceof MovableElement) {
                         MovableElement ma = (MovableElement) a;
-                        if (!processCollision(a)) {
-                            if (a instanceof Bullet) {
-                                System.out.println("serv broadcasted bullet with id = " + a.getId() + " velo " + ma.getCurVelo() );
-                            }
-
+                        if (!processCollision(ma, interval)) {
                             ma.mov(interval);
                             msgToBroadCast.add(new MovableUpdMsg(ma));
                             synchronized (msgToBroadCast) {

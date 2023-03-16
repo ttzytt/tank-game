@@ -1,12 +1,36 @@
 package utils;
 import java.awt.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 
-public class Coord implements Serializable{
+public class Coord implements Serializable, Comparable{
     public float x, y;
     public Coord(){
         this.x = 0;
         this.y = 0;
+    }
+
+    @Override 
+    public int compareTo(Object o){
+        Coord c = (Coord)o;
+        float epsilon = 0.0001f;
+        if (equals(o)) return 0;
+
+        if (Math.abs(this.x - c.x) < epsilon){
+            return (this.y - c.y) > 0 ? 1 : -1;
+        } else {
+            return (this.x - c.x) > 0 ? 1 : -1;
+        }
+    }
+
+    @Override 
+    public boolean equals(Object o){
+        if (o == null) return false;
+        if (o == this) return true;
+        if (!(o instanceof Coord)) return false;
+        Coord c = (Coord)o;
+        float epsilon = 0.0001f;
+        return Math.abs(this.x - c.x) < epsilon && Math.abs(this.y - c.y) < epsilon;
     }
 
     public Coord(Direct dir, float val){
@@ -49,6 +73,11 @@ public class Coord implements Serializable{
         }
     }
 
+    public Coord getUnit(){
+        return div(dis());
+    }
+
+
     public float getDirSpeed(){
         assert (x == 0 || y == 0) : "Cannot move both x and y at the same time, this coord might be a position value";
         return Math.abs(x) + Math.abs(y);
@@ -65,6 +94,11 @@ public class Coord implements Serializable{
     public Coord(float x, float y){
         this.x = x;
         this.y = y;
+    }
+
+    public Coord(double x, double y){
+        this.x = (float)x;
+        this.y = (float)y;
     }
 
     public Coord(int x, int y){
@@ -131,6 +165,10 @@ public class Coord implements Serializable{
         return Math.abs(x - c.x) + Math.abs(y - c.y);
     }
 
+    public float dis(){
+        return (float)Math.sqrt(x * x + y * y);
+    }
+
     public Coord round(){
         return new Coord(Math.round(x), Math.round(y));
     }
@@ -152,14 +190,23 @@ public class Coord implements Serializable{
         return "(" + x + ", " + y + ")";
     }
 
-    @Override
-    public boolean equals(Object o){
-        if (o == null) return false;
-        if (o == this) return true;
-        if (!(o instanceof Coord)) return false;
-        Coord c = (Coord)o;
-        return c.x == x && c.y == y;
+    public Coord getFlr(){
+        return new Coord(Math.floor(x), Math.floor(y));
     }
 
+    public Coord getCil(){
+        return new Coord(Math.ceil(x), Math.ceil(y));
+    }
+
+    public BlkCoord getFlrB(){
+        return new BlkCoord(getFlr());
+    }
+
+    public BlkCoord getCilB(){
+        return new BlkCoord(getCil());
+    }
+
+
+    
     public static final long serialVersionUID = 114514;
 }

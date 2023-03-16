@@ -7,14 +7,12 @@ import utils.*;
 public class GUI {
     GamePanel gpanle;
     JFrame frame;
-    boolean netMode;
-    public GUI(boolean netMode) {
-        this.netMode = netMode;
+    public GUI() {
         frame = new JFrame("Tank Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 500);
         frame.setResizable(true);
-        gpanle = new GamePanel(netMode);
+        gpanle = new GamePanel();
         frame.add(gpanle);
         for (KeyListener kl : gpanle.getKeyListeners())
             frame.addKeyListener(kl);

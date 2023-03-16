@@ -17,6 +17,28 @@ public enum Direct {
         public Direct turnLeft() {
             return LEFT;
         }
+        @Override
+        public Direct turn(Direct other) {
+            if (other == UP)
+                return UP;
+            else if (other == DOWN)
+                return DOWN;
+            else if (other == LEFT)
+                return LEFT;
+            else
+                return RIGHT;
+        }
+        @Override
+        public Direct getRelDir(Direct other){
+            if (other == UP)
+                return UP;
+            else if (other == DOWN)
+                return DOWN;
+            else if (other == LEFT)
+                return LEFT;
+            else
+                return RIGHT;
+        }
     },
      DOWN{
         @Override
@@ -30,6 +52,28 @@ public enum Direct {
         @Override
         public Direct turnLeft() {
             return RIGHT;
+        }
+        @Override
+        public Direct turn(Direct other) {
+            if (other == UP)
+                return DOWN;
+            else if (other == DOWN)
+                return UP;
+            else if (other == LEFT)
+                return RIGHT;
+            else
+                return LEFT;
+        }
+        @Override
+        public Direct getRelDir(Direct other){
+            if (other == UP)
+                return DOWN;
+            else if (other == DOWN)
+                return UP;
+            else if (other == LEFT)
+                return RIGHT;
+            else
+                return LEFT;
         }
     },
      LEFT{
@@ -45,6 +89,28 @@ public enum Direct {
         public Direct turnLeft() {
             return DOWN;
         }
+        @Override
+        public Direct turn(Direct other) {
+            if (other == UP)
+                return LEFT;
+            else if (other == DOWN)
+                return RIGHT;
+            else if (other == LEFT)
+                return DOWN;
+            else
+                return UP;
+        }
+        @Override
+        public Direct getRelDir(Direct other){
+            if (other == UP)
+                return RIGHT;
+            else if (other == DOWN)
+                return LEFT;
+            else if (other == LEFT)
+                return UP;
+            else
+                return DOWN;
+        }
     },
      RIGHT{
         @Override
@@ -59,10 +125,34 @@ public enum Direct {
         public Direct turnLeft() {
             return UP;
         }
+        @Override
+        public Direct turn(Direct other) {
+            if (other == UP)
+                return RIGHT;
+            else if (other == DOWN)
+                return LEFT;
+            else if (other == LEFT)
+                return UP;
+            else
+                return DOWN;
+        }
+        @Override
+        public Direct getRelDir(Direct other){
+            if (other == UP)
+                return LEFT;
+            else if (other == DOWN)
+                return RIGHT;
+            else if (other == LEFT)
+                return DOWN;
+            else
+                return UP;
+        }
     };
     abstract public Direct turnOpp();
     abstract public Direct turnRight();
     abstract public Direct turnLeft();
+    abstract public Direct turn(Direct other);
+    abstract public Direct getRelDir(Direct other);
 
     public static Direct getRandDir(){
         int i = (int)(Math.random()*4);

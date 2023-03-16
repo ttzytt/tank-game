@@ -65,7 +65,7 @@ public class Tank extends KeyControlMovable {
         hp = Consts.INIT_TANK_HP;
         weapon = new Gun(initPos, id, updPosToServer);
         map.addKeyControllable(weapon);
-        curDir = Direct.UP;
+        dir = Direct.UP;
         size = Helpers.getAspRate(Consts.T1_UP_IMG).mul(Consts.TANK_SIZE_RATIO);
         curVelo = new Coord(0, 0);
         damage = Consts.INIT_TANK_DAMAGE;
@@ -83,7 +83,8 @@ public class Tank extends KeyControlMovable {
             img = ilf.deepCopy();
         else if (dir == Direct.RIGHT)
             img = irt.deepCopy();
-        this.curDir = dir;
+        this.dir = dir;
+        weapon.setCurDir(dir);
     }
 
     public Tank(BornMsg bm, boolean updPosToServer) {
@@ -92,7 +93,10 @@ public class Tank extends KeyControlMovable {
 
     @Override
     public MoveHandler getKeyController() {
-        return keyController;
+        if (updPosToServer || ! Consts.IS_NET_MODE)
+            return keyController;
+        else
+            return null;
     }
 
     public void setKeyController(MoveHandler moveHandler) {
@@ -139,6 +143,30 @@ public class Tank extends KeyControlMovable {
     }
 
     @Override
+    public void setDir(Direct dir) {
+        super.setDir(dir);
+        weapon.setCurDir(dir);
+        switch (dir) {
+            case UP:
+                img.updImg(iup.getBufImg());
+                size = Helpers.getAspRate(Consts.T1_UP_IMG).mul(Consts.TANK_SIZE_RATIO);
+                break;
+            case DOWN:
+                img.updImg(idn.getBufImg());
+                size = Helpers.getAspRate(Consts.T1_DOWN_IMG).mul(Consts.TANK_SIZE_RATIO);
+                break;
+            case LEFT:
+                img.updImg(ilf.getBufImg());
+                size = Helpers.getAspRate(Consts.T1_LEFT_IMG).mul(Consts.TANK_SIZE_RATIO);
+                break;
+            case RIGHT:
+                img.updImg(irt.getBufImg());
+                size = Helpers.getAspRate(Consts.T1_RIGHT_IMG).mul(Consts.TANK_SIZE_RATIO);
+                break;
+        }
+    }
+
+    @Override
     protected boolean processCollision(GameElement other) {
         super.processCollision(other);
         // move back
@@ -146,6 +174,14 @@ public class Tank extends KeyControlMovable {
             // also ensure that the other direction have no wall
             Blks b = (Blks) other;
             TankBlkCollisionAuxInfo auxInfo = new TankBlkCollisionAuxInfo(b, this);
+            
+            float nearTkAtBack = Float.MAX_VALUE / 2;
+
+            for (Tank tks : map.getTks()){
+                // check the nereast tank at the back of this tank
+                // TODO
+            }
+
             if (!(auxInfo.midOpp instanceof Blks) &&
                     auxInfo.isTankEnclosed ||
                     (auxInfo.isTankOffsetLowerOrLeft && !(auxInfo.lowerOpp instanceof Blks)
@@ -153,10 +189,10 @@ public class Tank extends KeyControlMovable {
                     ||
                     (auxInfo.isTankOffsetHigherOrRight && !(auxInfo.upperOpp instanceof Blks)
                             && !(auxInfo.midOpp instanceof Blks))) {
-                pos = pos.sub(new Coord(curDir, Consts.TANK_COLLIDE_BOUNCE_DIST));
+                pos = pos.sub(new Coord(dir, Consts.TANK_COLLIDE_BOUNCE_DIST));
                 // tank can bounce bank if and only if it will not bounce to another block
             } else
-                pos = pos.sub(new Coord(curDir, 0.05f));
+                pos = pos.sub(new Coord(dir, 0.05f));
 
         }
         return true;
@@ -169,31 +205,23 @@ public class Tank extends KeyControlMovable {
             int keyCode = e.getKeyCode();
             if (keyCode == dirToKeyCode(Direct.UP)) {
                 weapon.curVelo = curVelo = new Coord(Direct.UP, speed);
-                weapon.curDir = curDir = Direct.UP;
-                size = Helpers.getAspRate(Consts.T1_UP_IMG).mul(Consts.TANK_SIZE_RATIO);
-                img.updImg(iup.getBufImg());
+                setDir(Direct.UP);
             } else if (keyCode == dirToKeyCode(Direct.DOWN)) {
                 weapon.curVelo = curVelo = new Coord(Direct.DOWN, speed);
-                img.updImg(idn.getBufImg());
-                weapon.curDir = curDir = Direct.DOWN;
-                size = Helpers.getAspRate(Consts.T1_DOWN_IMG).mul(Consts.TANK_SIZE_RATIO);
+                setDir(Direct.DOWN);
             } else if (keyCode == dirToKeyCode(Direct.LEFT)) {
                 weapon.curVelo = curVelo = new Coord(Direct.LEFT, speed);
-                img.updImg(ilf.getBufImg());
-                weapon.curDir = curDir = Direct.LEFT;
-                size = Helpers.getAspRate(Consts.T1_LEFT_IMG).mul(Consts.TANK_SIZE_RATIO);
+                setDir(Direct.LEFT);
             } else if (keyCode == dirToKeyCode(Direct.RIGHT)) {
                 weapon.curVelo = curVelo = new Coord(Direct.RIGHT, speed);
-                img.updImg(irt.getBufImg());
-                weapon.curDir = curDir = Direct.RIGHT;
-                size = Helpers.getAspRate(Consts.T1_RIGHT_IMG).mul(Consts.TANK_SIZE_RATIO);
-            }
-            if (curDir == Direct.UP || curDir == Direct.RIGHT)
-                weapon.pos = pos.add(new Coord(curDir.turnRight(), Consts.TANK_OFFSET_TO_GUN))
-                        .add(new Coord(curDir, .2f));
+                setDir(Direct.RIGHT);
+        }
+            if (dir == Direct.UP || dir == Direct.RIGHT)
+                weapon.pos = pos.add(new Coord(dir.turnRight(), Consts.TANK_OFFSET_TO_GUN))
+                        .add(new Coord(dir, .2f));
             else
-                weapon.pos = pos.add(new Coord(curDir.turnLeft(), Consts.TANK_OFFSET_TO_GUN))
-                        .add(new Coord(curDir, .2f));
+                weapon.pos = pos.add(new Coord(dir.turnLeft(), Consts.TANK_OFFSET_TO_GUN))
+                        .add(new Coord(dir, .2f));
             Helpers.validateAndRepaint(img);
         }
 
@@ -202,6 +230,7 @@ public class Tank extends KeyControlMovable {
             if (keyCode == dirToKeyCode(Direct.UP) || keyCode == dirToKeyCode(Direct.DOWN)
                     || keyCode == dirToKeyCode(Direct.LEFT) || keyCode == dirToKeyCode(Direct.RIGHT)) {
                 curVelo = new Coord(0, 0);
+                
             }
         }
 

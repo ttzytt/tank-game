@@ -20,6 +20,7 @@ public class ImagePanel extends JPanel {
     private int owid, ohei;
     private double aspRate;
     private String dbgL;
+    private Dimension lstDspSiz = new Dimension(0, 0);
     public ImagePanel(String path) {
         setVisible(true);
         setOpaque(false);
@@ -101,7 +102,7 @@ public class ImagePanel extends JPanel {
         resize((int)siz.x, (int)siz.y);
     }
 
-    public void esize(Dimension d) {
+    public void resize(Dimension d) {
         resize(d.width, d.height);
     }
 
@@ -203,4 +204,19 @@ public class ImagePanel extends JPanel {
         //// System.out.println("getPreferredSize called");
         return new Dimension(owid, ohei);
     }
+
+    @Override 
+    public void setBounds(Rectangle r){
+        super.setBounds(r);
+        lstDspSiz = new Dimension(r.width, r.height);
+    }
+    @Override
+    public int getWidth(){
+        return lstDspSiz.width;
+    }
+    @Override
+    public int getHeight(){
+        return lstDspSiz.height;
+    }
+
 }

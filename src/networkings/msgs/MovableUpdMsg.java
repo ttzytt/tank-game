@@ -5,26 +5,27 @@ import utils.*;
 public class MovableUpdMsg extends EvtMsg {
     public int id;
     public Coord pos, velo;
+    public Direct dir;
     // server will send the client pos
     // client will send the server velocity
-    public MovableUpdMsg(int movableId, Coord pos, Coord velo){
+    public MovableUpdMsg(int movableId, Coord pos, Coord velo, Direct dir){
         super();
         this.id = movableId;
         this.pos = pos;
         this.velo = velo;
     }
 
-    public MovableUpdMsg(int movableId, Coord pos, Coord velo, long prio){
-        this(movableId, pos, velo);
+    public MovableUpdMsg(int movableId, Coord pos, Coord velo, Direct dir, long prio){
+        this(movableId, pos, velo, dir);
         this.prio = prio;
     }
 
     public MovableUpdMsg(MovableElement me){
-        this(me.getId(), me.getPos(), me.getCurVelo());
+        this(me.getId(), me.getPos(), me.getCurVelo(), me.getDir());
     }
 
     public MovableUpdMsg(MovableElement me, long prio) {
-        this(me.getId(), me.getPos(), me.getCurVelo(), prio);
+        this(me.getId(), me.getPos(), me.getCurVelo(), me.getDir(), prio);
     }
 
     public int getId() {

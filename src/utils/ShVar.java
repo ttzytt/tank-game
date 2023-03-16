@@ -1,6 +1,6 @@
 package utils;
 
-import graphics.GameMap;
+import graphics.*;
 import networkings.msgs.EvtMsg;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -11,6 +11,7 @@ public class ShVar {
     // ----------- shared vmapSizeariables ------------
     public static Coord mapSize;
     public static GameMap map;
+    public static GamePanel gp;
     public static Queue<EvtMsg> clntMsgToSend = new ConcurrentLinkedQueue<>();
     private static int nexId = 0;
     synchronized public static int getNexId(){
