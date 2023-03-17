@@ -8,7 +8,6 @@ import java.util.Queue;
 
 // shared variables
 public class ShVar {
-    // ----------- shared vmapSizeariables ------------
     public static Coord mapSize;
     public static GameMap map;
     public static GamePanel gp;

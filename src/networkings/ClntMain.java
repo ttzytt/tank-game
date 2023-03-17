@@ -9,7 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-
+import static utils.DbgPrinter.*;
 import javax.sql.rowset.spi.SyncResolver;
 
 import gameElements.*;
@@ -24,7 +24,7 @@ public class ClntMain {
     InetSocketAddress servUdpAddr, servIPAddr;
     UDPwrap udpSock;
     int uid; // user id
-    GUI gui = new GUI();
+    GUI gui;
     public void recvServMsg() {
         while (true) {
             EvtMsg newM = (EvtMsg) udpSock.recvObj(servUdpAddr);
@@ -80,32 +80,34 @@ public class ClntMain {
             sock = new Socket(Consts.SERV_IP, ServConsts.TCP_PORT);
             udpSock = new UDPwrap(getRandPort());
             DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
-            System.out.println("port= " + udpSock.getUdpSock().getLocalPort());
+            dPrint("port= " + udpSock.getUdpSock().getLocalPort());
             dos.writeInt(udpSock.getUdpSock().getLocalPort()); // send the serve the UDP port
             DataInputStream dis = new DataInputStream(sock.getInputStream());
             uid = dis.readInt();
             int servUDPport = dis.readInt();
             servUdpAddr = new InetSocketAddress(Consts.SERV_IP, servUDPport);
-            System.out.println("connected to the server, uid=" + uid);
+            dPrint("connected to the server, uid=" + uid);
         } catch (Exception e) {
-            System.out.println("failed to connect to the server");
+            dPrint("failed to connect to the server");
             e.printStackTrace();
         } finally {
             try {
                 if (sock != null)
                     sock.close();
             } catch (Exception e) {
-                System.out.println("failed to close socket");
+                dPrint("failed to close socket");
                 e.printStackTrace();
             }
         }
-
+        Consts.CLNT_UID = uid;
     }
 
     public ClntMain() {
+        Consts.IS_SERVER = false;
         connect();
         invokeRecvServMsg();
         invokeSendServMsg();
+        gui = new GUI(); // the name of gui frame contains uid, so must be after connect()
         while(true){
             // process the received events
             // synchronized (msgRecved)
@@ -130,7 +132,9 @@ public class ClntMain {
                         MovableElement me = (MovableElement)map.getEleById(mm.getId());
                         if (me == null) continue;
                         me.setPos(mm.getPos());
-                        // me.setDir(mm.getDir());
+                        if (me.getId() != uid)
+                            me.setDir(mm.getDir());
+                        // no need to set direction for self
                     } else if (m instanceof RemEleMsg){
                         RemEleMsg rm = (RemEleMsg) m;
                         GameElement ge = map.getEleById(rm.getId());

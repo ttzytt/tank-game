@@ -7,6 +7,8 @@ import java.util.Queue;
 import static utils.ShVar.*;
 import graphics.*;
 import networkings.msgs.*;
+import utils.Consts;
+import static utils.DbgPrinter.*;
 import javax.swing.Timer;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
@@ -76,7 +78,7 @@ public class ServMain {
                         msgToBroadCast.wait();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        System.out.println("client msg wait failed");
+                        dPrint("client msg wait failed");
                     }
                 }
             }
@@ -109,7 +111,7 @@ public class ServMain {
                 cSock = listenSock.accept();
                 DataInputStream dis = new DataInputStream(cSock.getInputStream());
                 int cUDPport = dis.readInt();
-                System.out.println("one client connected port = " + cUDPport);
+                dPrint("one client connected port = " + cUDPport);
                 int tkId;
                 Clnt clnt = new Clnt(tkId = getNexId(), cUDPport, cSock.getInetAddress().getHostAddress());
                 clnts.add(clnt);
@@ -129,7 +131,7 @@ public class ServMain {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println("client connection failed");
+                dPrint("client connection failed");
             } finally {
                 try {
                     if (cSock != null)
@@ -159,7 +161,7 @@ public class ServMain {
             if (box.intersect(other)) {
                 collided |= GameElement.processCollision(ele, other);
                 if (GameElement.processCollision(ele, other)){
-                    System.out.println(ele + " collide with " + other);
+                    dPrint(ele + " collide with " + other);
                 }
                 if (other.isHpChanged()) {
                     msgToBroadCast.add(new HPUpdMsg(other));
@@ -181,13 +183,14 @@ public class ServMain {
     }
 
     public ServMain() {
+        Consts.IS_SERVER = true;
         try {
             listenSock = new ServerSocket(ServConsts.TCP_PORT);
             udpSock = new UDPwrap(ServConsts.UDP_PORT);
-            System.out.println("server socket created");
+            dPrint("server socket created");
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("server socket creation failed");
+            dPrint("server socket creation failed");
         }
         invokeSendMsg();
         invokeAcceptClient();
@@ -201,7 +204,7 @@ public class ServMain {
                     // because it is possible to first receive move msg then create msg
                     while (msgRecved.size() > 0) {
                         EvtMsg m = msgRecved.poll();
-                        // System.out.println("cur evt= " + m);
+                        // dPrint("cur evt= " + m);
                         MovableElement me = null;
                         if (m instanceof MovableUpdMsg) {
                             MovableUpdMsg mmsg = (MovableUpdMsg) m;
@@ -210,13 +213,12 @@ public class ServMain {
                             me.setCurVelo(mmsg.getVelo());
                             if (mmsg.getDir() != null)
                             me.setDir(mmsg.getDir());
-                            // System.out.println(mmsg + " type= " + me);
+                            // dPrint(mmsg + " type= " + me);
                         } else if (m instanceof BulletLaunchMsg) {
                             BulletLaunchMsg bmsg = (BulletLaunchMsg) m;
                             bmsg.id = getNexId(); // assign id to the bullet
                             mp.addEle(me = new Bullet(bmsg));
                             if (me == null) continue;
-                            System.out.println("serv broadcasted bullet with id = " + bmsg.id);
                             bmsg.setPrio(0); // need to create something before update them
                             msgToBroadCast.add(bmsg);
                             synchronized (msgToBroadCast) {
@@ -229,13 +231,13 @@ public class ServMain {
                 }
 
                 ArrayList<GameElement> eles = mp.getEles();
-                // System.out.println("start processcollision");
+                // dPrint("start processcollision");
                 for (GameElement a : eles) {
 
                     long interval = lstRefresh == -1 ? 0 : System.currentTimeMillis() - lstRefresh;
                     if (a.getRemoveStat() == RemStat.TO_REM) {
-                        System.out.println("serv broadcasted rem msg for id = " + a.getId() + " type = "
-                                + a.getClass().getSimpleName());
+                        // dPrint("serv broadcasted rem msg for id = " + a.getId() + " type = "
+                        //         + a.getClass().getSimpleName());
                         msgToBroadCast.add(new RemEleMsg(a));
                         synchronized (msgToBroadCast) {
                             msgToBroadCast.notify();

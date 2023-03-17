@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
+import static utils.DbgPrinter.*;
 
 public class GamePanel extends JPanel {
     private GameMap map;
@@ -50,7 +51,6 @@ public class GamePanel extends JPanel {
             long inter = System.currentTimeMillis() - lstRefresh;
             for (GameElement a : eles) {
                 if (a.getRemoveStat() == RemStat.TO_REM && a.getImg() != null) {
-                    System.out.println("Removing " + a);
                     remove(a.getImg());
                 
                     addedImg.remove(a.getImg());
@@ -85,7 +85,7 @@ public class GamePanel extends JPanel {
                     addKeyListener(kc.getKeyController());
                     addedKeyControllable.add(kc);
                     requestFocusInWindow();
-                    System.out.println("Added key controller " + kc);
+                    dPrint("Added key controller " + kc);
                 }
             }
         }
@@ -114,7 +114,8 @@ public class GamePanel extends JPanel {
         }
 
         for (KeyControllable kc : map.getKeyControllables()) {
-                addKeyListener(kc.getKeyController());
+            addKeyListener(kc.getKeyController());
+            dPrint("Added key controller " + kc);
             addedKeyControllable.add(kc);
         }
     }

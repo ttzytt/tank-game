@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-
+import static utils.DbgPrinter.*;
 public class UDPwrap {
     void sendObj(Object obj, InetSocketAddress addr){
         try {
@@ -21,7 +21,7 @@ public class UDPwrap {
             udpSock.send(dp);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("client msg send failed");
+            dPrint("client msg send failed");
         }
     }
 
@@ -36,7 +36,7 @@ public class UDPwrap {
             return ois.readObject();
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("client msg recv failed");
+            dPrint("client msg recv failed");
         }
         return null;
     }
@@ -58,7 +58,7 @@ public class UDPwrap {
             this.udpSock = new DatagramSocket(port);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("udp socket init failed");
+            dPrint("udp socket init failed");
         }
     }
 

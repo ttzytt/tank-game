@@ -8,6 +8,7 @@ import gameElements.GameElement.RemStat;
 import utils.*;
 import java.util.*;
 import java.util.Hashtable;
+import static utils.DbgPrinter.*;
 
 public class GameMap {
     private GameElement[][] map;
@@ -50,7 +51,7 @@ public class GameMap {
             buf_reader = new BufferedReader(reader);
             parseMap(buf_reader);
         } catch (Exception e) {
-            System.out.println("excetion thrown when loading map: " + e.getMessage());
+            dPrint("excetion thrown when loading map: " + e.getMessage());
         }
     }
 
@@ -92,7 +93,7 @@ public class GameMap {
     public GameElement getBlk(BlkCoord pos) {
         if (pos.x >= 0 && pos.x < max_x && pos.y >= 0 && pos.y < max_y)
             return map[pos.x][pos.y];
-        System.out.println("WARNING: getBlk out of bound");
+        dPrint("WARNING: getBlk out of bound");
         return null;
     }
 
@@ -179,7 +180,6 @@ public class GameMap {
         ArrayList<GameElement> eles = getEles();
         for (GameElement ele : eles) {
             if (ele.getClass() == cls) {
-                System.out.println("removing " + ele);
                 remEle(ele);
             }
         }
@@ -203,7 +203,8 @@ public class GameMap {
 
     public void addEle(GameElement ele) {
         assert ! (ele instanceof BoundingBox) : "cannot add bounding box to map";
-
+        if (Consts.IS_NET_MODE)
+            dPrint((Consts.IS_SERVER ? "server" : "client") + " adding ele: " + ele.getId() + " " + ele.getClass().getSimpleName());
         if (ele instanceof Blks) {
             Blks blk = (Blks) ele;
             blkToPos.put(blk, blk.getIntPos());
@@ -268,8 +269,7 @@ public class GameMap {
         }
 
         Tank nt = new Tank(tmpPos, Direct.getRandDir(), id, false);
-        tks.add(nt);
-        idToEle.put(id, nt);
+        addEle(nt);
         return nt;
     }
 
@@ -340,7 +340,7 @@ public class GameMap {
                 cur_y++;
             }
         } catch (Exception e) {
-            System.out.println("exception thrown when parsing map: " + e.getMessage());
+            dPrint("exception thrown when parsing map: " + e.getMessage());
         }
     }
 }

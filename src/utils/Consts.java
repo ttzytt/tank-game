@@ -45,9 +45,9 @@ public class Consts {
 
     public final static int INIT_TANK_HP = 50;
     public final static int INIT_TANK_DAMAGE = 4; // damage per hit
-    public final static float TANK_OFFSET_TO_GUN = 0.23f;
+    public final static float TANK_OFFSET_TO_GUN = 0.23f;// make the gun at the center of tank
     public final static float TANK_COLLIDE_BOUNCE_DIST = .4f;
-    public final static float TANK_SIZE_RATIO = .8f;
+    public final static float TANK_SIZE_RATIO = .8f; // compare to blocks, what is tanks' size
 
     public final static float INIT_TANK_SPEED = 1.25f; // blopcks per second
 
@@ -64,6 +64,8 @@ public class Consts {
     public final static String SERV_IP = "127.0.0.1";
     public final static int MOVABLE_POS_UPD_INTERV = 20; // ms
     public static boolean IS_NET_MODE = true;
+    public static boolean IS_SERVER;
+    public static int CLNT_UID; // if this is a client, this will be setted
 
     // ------------ bot settings ------------
 }   

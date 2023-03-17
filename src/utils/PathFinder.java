@@ -69,7 +69,6 @@ public class PathFinder {
                 // check if the next box is in the map
                 if (!nextBox.getPos().inRect(nextBox.getSize(), Coord.zero(), mapSize)) continue;
                 if (visited.containsKey(nextBox.getPos()) && visited.get(nextBox.getPos())){
-                    System.out.println("continued");
                     continue;
 
                 }
