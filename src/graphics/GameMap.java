@@ -327,7 +327,7 @@ public class GameMap {
                         case '2':
                             if (!Consts.IS_NET_MODE) {
                                 Tank tk;
-                                addEle(tk = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId(), true));
+                                addEle(tk = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId(), false));
                                 keyControllables.add(tk);
                             }
                             break;

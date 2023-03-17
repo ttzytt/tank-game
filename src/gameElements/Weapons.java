@@ -109,8 +109,8 @@ public abstract class Weapons implements KeyControllable{
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
-            // Bullet bullet = new AutoBullet(pos, speed, curDir, getNexId(), fromTankID, .3f);
-            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
+            Bullet bullet = new AutoBullet(pos, speed, curDir, getNexId(), fromTankID, .3f);
+            // Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
             bullet.addNoColObj(fromTankID);
             if (!updPosToServer)
                 map.addEle(bullet);
