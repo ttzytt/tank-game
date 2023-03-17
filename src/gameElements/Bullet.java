@@ -16,6 +16,7 @@ public class Bullet extends MovableElement{
         size = Consts.INIT_BULLET_SIZE;
         damage = Consts.INIT_BULLET_DAMAGE;
         toRemove = false;
+        this.dir = dir;
     }
 
     // constructor with image 
@@ -26,7 +27,7 @@ public class Bullet extends MovableElement{
         this.img = img;
         damage = Consts.INIT_BULLET_DAMAGE;
         this.size = Consts.INIT_BULLET_SIZE;
-        dir = dir;
+        this.dir = dir;
         curVelo = new Coord(dir, speed);
     }
     boolean toRemove = false; 

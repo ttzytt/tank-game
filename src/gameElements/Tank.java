@@ -60,31 +60,31 @@ public class Tank extends KeyControlMovable {
     ImagePanel iup, idn, ilf, irt;
     Weapons weapon;
 
-    public Tank(Coord initPos, Direct dir, int id, boolean updPosToServer) {
-        super(id, updPosToServer);
+    public Tank(Coord _initPos, Direct _dir, int _id, boolean _updPosToServer) {
+        super(_id, _updPosToServer);
         hp = Consts.INIT_TANK_HP;
-        weapon = new Gun(initPos, id, updPosToServer);
+        weapon = new Gun(_initPos, _id, _updPosToServer);
         map.addKeyControllable(weapon);
-        dir = Direct.UP;
+        this.dir = Direct.UP;
         size = Helpers.getAspRate(Consts.T1_UP_IMG).mul(Consts.TANK_SIZE_RATIO);
         curVelo = new Coord(0, 0);
         damage = Consts.INIT_TANK_DAMAGE;
-        pos = initPos;
-        iup = new ImagePanel(id == 1 ? Consts.T1_UP_IMG_PATH : Consts.T2_UP_IMG_PATH);
-        idn = new ImagePanel(id == 1 ? Consts.T1_DOWN_IMG_PATH : Consts.T2_DOWN_IMG_PATH);
-        ilf = new ImagePanel(id == 1 ? Consts.T1_LEFT_IMG_PATH : Consts.T2_LEFT_IMG_PATH);
-        irt = new ImagePanel(id == 1 ? Consts.T1_RIGHT_IMG_PATH : Consts.T2_RIGHT_IMG_PATH);
-        this.id = id;
-        if (dir == Direct.UP)
+        pos = _initPos;
+        iup = new ImagePanel(_id == 1 ? Consts.T1_UP_IMG_PATH : Consts.T2_UP_IMG_PATH);
+        idn = new ImagePanel(_id == 1 ? Consts.T1_DOWN_IMG_PATH : Consts.T2_DOWN_IMG_PATH);
+        ilf = new ImagePanel(_id == 1 ? Consts.T1_LEFT_IMG_PATH : Consts.T2_LEFT_IMG_PATH);
+        irt = new ImagePanel(_id == 1 ? Consts.T1_RIGHT_IMG_PATH : Consts.T2_RIGHT_IMG_PATH);
+        this.id = _id;
+        if (_dir == Direct.UP)
             img = iup.deepCopy();
-        else if (dir == Direct.DOWN)
+        else if (_dir == Direct.DOWN)
             img = idn.deepCopy();
-        else if (dir == Direct.LEFT)
+        else if (_dir == Direct.LEFT)
             img = ilf.deepCopy();
-        else if (dir == Direct.RIGHT)
+        else if (_dir == Direct.RIGHT)
             img = irt.deepCopy();
-        this.dir = dir;
-        weapon.setCurDir(dir);
+        this.dir = _dir;
+        weapon.setCurDir(_dir);
     }
 
     public Tank(BornMsg bm, boolean updPosToServer) {
@@ -103,24 +103,24 @@ public class Tank extends KeyControlMovable {
         this.keyController = moveHandler;
     }
 
-    public int dirToKeyCode(Direct dir) {
+    public int dirToKeyCode(Direct _dir) {
         if (id % 2 == 1) {
-            if (dir == Direct.UP)
+            if (_dir == Direct.UP)
                 return KeyEvent.VK_UP;
-            else if (dir == Direct.DOWN)
+            else if (_dir == Direct.DOWN)
                 return KeyEvent.VK_DOWN;
-            else if (dir == Direct.LEFT)
+            else if (_dir == Direct.LEFT)
                 return KeyEvent.VK_LEFT;
-            else if (dir == Direct.RIGHT)
+            else if (_dir == Direct.RIGHT)
                 return KeyEvent.VK_RIGHT;
         } else if (id % 2 == 0) {
-            if (dir == Direct.UP)
+            if (_dir == Direct.UP)
                 return KeyEvent.VK_W;
-            else if (dir == Direct.DOWN)
+            else if (_dir == Direct.DOWN)
                 return KeyEvent.VK_S;
-            else if (dir == Direct.LEFT)
+            else if (_dir == Direct.LEFT)
                 return KeyEvent.VK_A;
-            else if (dir == Direct.RIGHT)
+            else if (_dir == Direct.RIGHT)
                 return KeyEvent.VK_D;
         }
         return -1;
@@ -142,10 +142,16 @@ public class Tank extends KeyControlMovable {
         this.speed = speed;
     }
 
+
+    @Override
+    public void setPos(Coord pos){
+        super.setPos(pos);
+        weapon.setPosByTkPos(pos);
+    }
+
     @Override
     public void setDir(Direct dir) {
-        super.setDir(dir);
-        weapon.setCurDir(dir);
+        // weapon.setCurDir(dir);
         switch (dir) {
             case UP:
                 img.updImg(iup.getBufImg());
@@ -164,6 +170,8 @@ public class Tank extends KeyControlMovable {
                 size = Helpers.getAspRate(Consts.T1_RIGHT_IMG).mul(Consts.TANK_SIZE_RATIO);
                 break;
         }
+        this.dir = dir;
+        weapon.setCurDir(dir);
     }
 
     @Override
@@ -216,12 +224,7 @@ public class Tank extends KeyControlMovable {
                 weapon.curVelo = curVelo = new Coord(Direct.RIGHT, speed);
                 setDir(Direct.RIGHT);
         }
-            if (dir == Direct.UP || dir == Direct.RIGHT)
-                weapon.pos = pos.add(new Coord(dir.turnRight(), Consts.TANK_OFFSET_TO_GUN))
-                        .add(new Coord(dir, .2f));
-            else
-                weapon.pos = pos.add(new Coord(dir.turnLeft(), Consts.TANK_OFFSET_TO_GUN))
-                        .add(new Coord(dir, .2f));
+            weapon.setPosByTkPos(pos);
             Helpers.validateAndRepaint(img);
         }
 

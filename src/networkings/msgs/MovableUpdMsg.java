@@ -8,11 +8,28 @@ public class MovableUpdMsg extends EvtMsg {
     public Direct dir;
     // server will send the client pos
     // client will send the server velocity
+
+    
+
     public MovableUpdMsg(int movableId, Coord pos, Coord velo, Direct dir){
         super();
+        assert dir != null;
         this.id = movableId;
         this.pos = pos;
         this.velo = velo;
+        this.dir = dir;
+    }
+
+    public Direct getDir() {
+        return dir;
+    }
+
+    public void setDir(Direct dir) {
+        this.dir = dir;
+    }
+
+    public static long getSerialversionuid() {
+        return serialVersionUID;
     }
 
     public MovableUpdMsg(int movableId, Coord pos, Coord velo, Direct dir, long prio){

@@ -24,6 +24,7 @@ public abstract class KeyControlMovable extends MovableElement implements KeyCon
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     MovableUpdMsg mm = new MovableUpdMsg(KeyControlMovable.this);
+                    System.out.println(KeyControlMovable.this + " with dir= " + KeyControlMovable.this.getDir());
                     clntMsgToSend.add(mm);
                     synchronized (clntMsgToSend) {
                         clntMsgToSend.notify();

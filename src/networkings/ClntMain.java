@@ -130,7 +130,7 @@ public class ClntMain {
                         MovableElement me = (MovableElement)map.getEleById(mm.getId());
                         if (me == null) continue;
                         me.setPos(mm.getPos());
-                        me.setDir(mm.getVelo().getDir());
+                        // me.setDir(mm.getDir());
                     } else if (m instanceof RemEleMsg){
                         RemEleMsg rm = (RemEleMsg) m;
                         GameElement ge = map.getEleById(rm.getId());

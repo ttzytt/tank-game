@@ -57,7 +57,7 @@ public class PathFinder {
                 // found the path
                 while (curNode.prev != null){
                     path.push(curNode.box.getPos());
-                    map.addEle(new DbgBox(mapSize, new Coord(.1f, 0.1f), Color.pink, null, getCurId()));
+                    map.addEle(new DbgBox(curNode.box.getPos(), new Coord(.1f, 0.1f), Color.white, null, getNexId()));
                     curNode = curNode.prev;
                 }
                 return;

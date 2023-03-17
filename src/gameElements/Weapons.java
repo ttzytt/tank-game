@@ -95,11 +95,22 @@ public abstract class Weapons implements KeyControllable{
         this.curDir = curDir;
     }
 
+    public void setPosByTkPos(Coord tkPos){
+        if (curDir == Direct.UP || curDir == Direct.RIGHT)
+            pos = tkPos.add(new Coord(curDir.turnRight(), Consts.TANK_OFFSET_TO_GUN))
+                    .add(new Coord(curDir, .2f));
+        else
+            pos = tkPos.add(new Coord(curDir.turnLeft(), Consts.TANK_OFFSET_TO_GUN))
+                    .add(new Coord(curDir, .2f));
+    }
+
+
     Bullet Fire() {
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
-            Bullet bullet = new AutoBullet(pos, speed, curDir, getNexId(), fromTankID, .3f);
+            // Bullet bullet = new AutoBullet(pos, speed, curDir, getNexId(), fromTankID, .3f);
+            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
             bullet.addNoColObj(fromTankID);
             if (!updPosToServer)
                 map.addEle(bullet);

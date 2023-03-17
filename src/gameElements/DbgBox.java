@@ -16,7 +16,7 @@ public class DbgBox extends BoundingBox{
         imgCol = col;
         this.id = id;
         imgSize = siz;
-        img = new ImagePanel(Consts.TRANSPARENT_IMG);
+        img = new ImagePanel(Consts.EMPTY_BLK_IMG);
     }
     @Override
     public void setImgBound(int pixPerBlk){

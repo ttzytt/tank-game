@@ -207,8 +207,9 @@ public class ServMain {
                             MovableUpdMsg mmsg = (MovableUpdMsg) m;
                             me = (MovableElement) mp.getEleById(mmsg.id);
                             if (me == null) continue;
-                            me.setCurVelo(mmsg.velo);
-                            me.setDir(mmsg.velo.getDir());
+                            me.setCurVelo(mmsg.getVelo());
+                            if (mmsg.getDir() != null)
+                            me.setDir(mmsg.getDir());
                             // System.out.println(mmsg + " type= " + me);
                         } else if (m instanceof BulletLaunchMsg) {
                             BulletLaunchMsg bmsg = (BulletLaunchMsg) m;

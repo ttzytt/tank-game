@@ -319,18 +319,16 @@ public class GameMap {
                             break;
                         case '1':
                             if (!Consts.IS_NET_MODE) {
-                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP,
-                                        ShVar.getNexId(), false);
-                                addEle( map[cur_x + 1][cur_y + 1]);
-                                keyControllables.add((Tank) map[cur_x + 1][cur_y + 1]);
+                                Tank tk;
+                                addEle(tk = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId(), false));
+                                keyControllables.add(tk);
                             }
                             break;
                         case '2':
                             if (!Consts.IS_NET_MODE) {
-                                map[cur_x + 1][cur_y + 1] = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.DOWN,
-                                        ShVar.getNexId(), false);
-                                addEle( map[cur_x + 1][cur_y + 1]);
-                                keyControllables.add((Tank) map[cur_x + 1][cur_y + 1]);
+                                Tank tk;
+                                addEle(tk = new Tank(new Coord(cur_x + 1, cur_y + 1), Direct.UP, ShVar.getNexId(), true));
+                                keyControllables.add(tk);
                             }
                             break;
                     }
