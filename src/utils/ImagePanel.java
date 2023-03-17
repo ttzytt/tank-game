@@ -195,8 +195,10 @@ public class ImagePanel extends JPanel {
         // draw dbgL
         // System.out.println(dbgL);
         g.drawImage(dspImg, (int) Math.round((double) wOff / 2.0), (int) Math.round((double) hOff / 2.0), this);
-        if(dbgL != null)
-        g.drawString(dbgL,1, 10);
+        if(dbgL != null){
+            g.setColor(Color.orange);
+            g.drawString(dbgL,1, 10);
+        }
     }
 
     @Override

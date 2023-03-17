@@ -170,6 +170,8 @@ public class Tank extends KeyControlMovable {
                 size = Helpers.getAspRate(Consts.T1_RIGHT_IMG).mul(Consts.TANK_SIZE_RATIO);
                 break;
         }
+        if (Consts.IS_NET_MODE && !Consts.IS_SERVER)
+        img.setDbgL("" + getId());
         this.dir = dir;
         weapon.setCurDir(dir);
     }
