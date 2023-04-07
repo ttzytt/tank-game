@@ -7,15 +7,13 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.validation.Validator;
-
+import static utils.DbgPrinter.*;
 import networkings.msgs.*;
 import java.awt.*;
 import java.awt.event.*;
 import static utils.ShVar.*;
 
-public class Tank extends KeyControlMovable {
-    float speed = Consts.INIT_TANK_SPEED;
-
+public class Tank extends KeyCtrlMovable {
     public ImagePanel getIup() {
         return iup;
     }
@@ -62,6 +60,7 @@ public class Tank extends KeyControlMovable {
 
     public Tank(Coord _initPos, Direct _dir, int _id, boolean _updPosToServer) {
         super(_id, _updPosToServer);
+        speed = Consts.INIT_TANK_SPEED;
         hp = Consts.INIT_TANK_HP;
         weapon = new Gun(_initPos, _id, _updPosToServer);
         map.addKeyControllable(weapon);
@@ -92,9 +91,9 @@ public class Tank extends KeyControlMovable {
     }
 
     @Override
-    public MoveHandler getKeyController() {
+    public GeKeyCtrller getKeyController() {
         if (updPosToServer || ! Consts.IS_NET_MODE)
-            return keyController;
+            return new GeKeyCtrller(id, keyController);
         else
             return null;
     }
@@ -212,6 +211,7 @@ public class Tank extends KeyControlMovable {
     public class MoveHandler implements KeyListener {
 
         public void keyPressed(KeyEvent e) {
+            dPrint("pressed");
             int keyCode = e.getKeyCode();
             if (keyCode == dirToKeyCode(Direct.UP)) {
                 weapon.curVelo = curVelo = new Coord(Direct.UP, speed);

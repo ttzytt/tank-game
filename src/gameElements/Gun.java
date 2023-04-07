@@ -19,8 +19,8 @@ public class Gun extends Weapons  {
 
 
     @Override
-    public KeyListener getKeyController() {
-        return keyController;
+    public GeKeyCtrller getKeyController() {
+        return new GeKeyCtrller(fromTankID, keyController);
     }
 
     public class MoveHandler implements KeyListener {
@@ -34,9 +34,9 @@ public class Gun extends Weapons  {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT)
                 return;
             if (!useLeftShift && e.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT)
-                Fire();
+                fire();
             else if (useLeftShift && e.getKeyLocation() == KeyEvent.KEY_LOCATION_LEFT)
-                Fire();
+                fire();
         }
         @Override
         public void keyReleased(KeyEvent e) {

@@ -5,7 +5,7 @@ import java.util.*;
 import java.awt.event.*;
 import static utils.ShVar.*;
 import networkings.msgs.*;
-public abstract class Weapons implements KeyControllable{
+public abstract class Weapons implements KeyCtrlable{
     long lastFireTm;
     long fireInterv;
     float speed;
@@ -105,12 +105,12 @@ public abstract class Weapons implements KeyControllable{
     }
 
 
-    Bullet Fire() {
+    Bullet fire() {
         long curTime = System.currentTimeMillis();
         if (curTime - lastFireTm >= fireInterv) {
             lastFireTm = curTime;
             // Bullet bullet = new AutoBullet(pos, speed, curDir, getNexId(), fromTankID, .3f);
-            Bullet bullet = new Bullet(pos, speed, curDir, getNexId(), fromTankID);
+            Bullet bullet = new Bullet(pos, speed, curDir, Consts.IS_NET_MODE ? -1 : getNexId(), fromTankID);
             bullet.addNoColObj(fromTankID);
             if (!updPosToServer)
                 map.addEle(bullet);

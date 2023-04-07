@@ -2,7 +2,6 @@ package gameElements;
 import networkings.msgs.*;
 import utils.*;
 public class Bullet extends MovableElement{
-    float speed;
     int fromTankID;
     public Bullet(Coord pos, float speed, Direct dir, int id, int tankID){
         super(id);
