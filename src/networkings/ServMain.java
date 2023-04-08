@@ -31,7 +31,7 @@ public class ServMain {
         public int tankID;
         public int UDPport;
         public String IP;
-
+        public Queue<EvtMsg> msgToSend = new ConcurrentLinkedQueue<>();
         public InetSocketAddress getAddr() {
             return new InetSocketAddress(IP, UDPport);
         }
@@ -88,6 +88,13 @@ public class ServMain {
                     udpSock.sendObj(curM, c.getAddr());
                 }
             }
+            for (Clnt c : clnts){
+                synchronized (c.msgToSend) {
+                    while (c.msgToSend.size() > 0) {
+                        udpSock.sendObj(c.msgToSend.poll(), c.getAddr());
+                    }
+                }
+            }
         }
     }
 
@@ -120,7 +127,8 @@ public class ServMain {
                 dos.writeInt(tkId);
                 dos.writeInt(ServConsts.UDP_PORT);
                 mp.addTankAtRandPos(tkId);
-
+                dPrint("MapInitMsg sent to " + clnt.getAddr());
+                clnt.msgToSend.add(new MapInitMsg(mp));
                 // tell the client about all the exisiting palyers
                 for (Tank tk : mp.getTks()) {
                     msgToBroadCast.add(new BornMsg((Tank) tk, 0));
@@ -192,8 +200,8 @@ public class ServMain {
             e.printStackTrace();
             dPrint("server socket creation failed");
         }
-        invokeSendMsg();
         invokeAcceptClient();
+        invokeSendMsg();
 
         Timer procTimer = new Timer(ServConsts.PROC_INTERV, new ActionListener() {
             @Override

@@ -9,6 +9,7 @@ import utils.*;
 import java.util.*;
 import java.util.Hashtable;
 import static utils.DbgPrinter.*;
+import networkings.msgs.*;
 
 public class GameMap {
     private GameElement[][] map;
@@ -16,8 +17,6 @@ public class GameMap {
     private int max_x, max_y; // max possible x and y in the whole map
     private Hashtable<Blks, BlkCoord> blkToPos = new Hashtable<>();
     private Hashtable<Integer, GameElement> idToEle = new Hashtable<>();
-    private Hashtable<KeyCtrlable, Integer> keyCtrlToId = new Hashtable<>();
-
     private ArrayList<Tank> tks = new ArrayList<>();
 
     public ArrayList<Bullet> getBlts() {
@@ -54,6 +53,27 @@ public class GameMap {
         } catch (Exception e) {
             dPrint("excetion thrown when loading map: " + e.getMessage());
         }
+    }
+
+    public GameMap(MapInitMsg msg){
+        max_x = msg.getMax_x();
+        max_y = msg.getMax_y();
+        map = new GameElement[max_x + 1][max_y + 1];
+        // generateSurroundingSolidBlk();
+        for (int i = 0; i <= max_x; i++){
+            for (int j = 0; j <= max_y; j++){
+                switch (msg.getMpch()[i][j]){
+                    case 'S':
+                        addEle(new SolidBlk(new BlkCoord(i, j), msg.getMpid()[i][j]));
+                        break;
+                    case 'D':
+                        addEle(new DestrBlk(new BlkCoord(i, j), msg.getMpid()[i][j]));
+                        break;
+                    default:
+                }
+            }
+        }
+        ShVar.map = this;
     }
 
     public Hashtable<Blks, BlkCoord> getBlkToPos() {
@@ -278,6 +298,41 @@ public class GameMap {
         this.map = map;
     }
 
+
+    private void generateSurroundingSolidBlk(){
+        for (int i = 0; i < max_x; i++) {
+            map[i][0] = new SolidBlk(new BlkCoord(i, 0), ShVar.getNexId());
+            map[i][max_y - 1] = new SolidBlk(new BlkCoord(i, max_y - 1), ShVar.getNexId());
+            idToEle.put(map[i][0].getId(), map[i][0]);
+            idToEle.put(map[i][max_y - 1].getId(), map[i][max_y - 1]);
+            blkToPos.put((Blks) map[i][0], new BlkCoord(i, 0));
+        }
+        for (int i = 0; i < max_y; i++) {
+            map[0][i] = new SolidBlk(new BlkCoord(0, i), ShVar.getNexId());
+            map[max_x - 1][i] = new SolidBlk(new BlkCoord(max_x - 1, i), ShVar.getNexId());
+            idToEle.put(map[0][i].getId(), map[0][i]);
+            idToEle.put(map[max_x - 1][i].getId(), map[max_x - 1][i]);
+            blkToPos.put((Blks) map[0][i], new BlkCoord(0, i));
+        }
+    }
+
+    static public char getEleCh(GameElement e){
+        if (e instanceof DestrBlk){
+            return 'D';
+        } else if (e instanceof SolidBlk){
+            return 'S';
+        } else {
+            return 'O';
+        }
+    }
+
+    public char getEleCh(BlkCoord pos){
+        return getEleCh(map[pos.x][pos.y]);
+    }
+    public char getEleCh(int x, int y){
+        return getEleCh(map[x][y]);
+    }
+
     private void parseMap(BufferedReader bufr) {
         String curLine;
         try {
@@ -288,21 +343,7 @@ public class GameMap {
             map = new GameElement[max_x + 1][max_y + 1]; //
             ShVar.mapSize = new Coord(max_x, max_y);
             ShVar.map = this;
-            for (int i = 0; i < max_x; i++) {
-                map[i][0] = new SolidBlk(new BlkCoord(i, 0), ShVar.getNexId());
-                map[i][max_y - 1] = new SolidBlk(new BlkCoord(i, max_y - 1), ShVar.getNexId());
-                idToEle.put(map[i][0].getId(), map[i][0]);
-                idToEle.put(map[i][max_y - 1].getId(), map[i][max_y - 1]);
-                blkToPos.put((Blks) map[i][0], new BlkCoord(i, 0));
-            }
-            for (int i = 0; i < max_y; i++) {
-                map[0][i] = new SolidBlk(new BlkCoord(0, i), ShVar.getNexId());
-                map[max_x - 1][i] = new SolidBlk(new BlkCoord(max_x - 1, i), ShVar.getNexId());
-                idToEle.put(map[0][i].getId(), map[0][i]);
-                idToEle.put(map[max_x - 1][i].getId(), map[max_x - 1][i]);
-                blkToPos.put((Blks) map[0][i], new BlkCoord(0, i));
-            }
-
+            generateSurroundingSolidBlk();
             int cur_y = 0;
             while ((curLine = bufr.readLine()) != null) {
                 for (int cur_x = 0; cur_x < max_x - 2; cur_x++) {

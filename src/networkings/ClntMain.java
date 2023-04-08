@@ -25,11 +25,12 @@ public class ClntMain {
     UDPwrap udpSock;
     int uid; // user id
     GUI gui;
+
     public void recvServMsg() {
         while (true) {
             EvtMsg newM = (EvtMsg) udpSock.recvObj(servUdpAddr);
             msgRecved.add(newM);
-            synchronized(msgRecved){
+            synchronized (msgRecved) {
                 msgRecved.notify();
             }
         }
@@ -48,7 +49,7 @@ public class ClntMain {
         while (true) {
             if (clntMsgToSend.isEmpty()) {
                 try {
-                    synchronized (clntMsgToSend){
+                    synchronized (clntMsgToSend) {
                         clntMsgToSend.wait();
                     }
                 } catch (InterruptedException e) {
@@ -105,46 +106,59 @@ public class ClntMain {
     public ClntMain() {
         Consts.IS_SERVER = false;
         connect();
+
         invokeRecvServMsg();
         invokeSendServMsg();
-        gui = new GUI(); // the name of gui frame contains uid, so must be after connect()
-        while(true){
+        
+        // wait for mapinit msg to be received
+        while(msgRecved.isEmpty()){
+        }
+        while(!(msgRecved.peek() instanceof MapInitMsg)){
+        }
+        MapInitMsg mim = (MapInitMsg) msgRecved.poll();
+        gui = new GUI(mim);
+
+        while (true) {
             // process the received events
             // synchronized (msgRecved)
-                while(msgRecved.size() > 0){
-                    EvtMsg m = msgRecved.poll();
-                    if (m instanceof BornMsg){
-                        BornMsg bm = (BornMsg) m;
-                        if (map.getEleById(bm.id) != null) // already added this tank
-                            continue;
-                        map.addEle(new Tank(bm, uid == bm.getId()));
-                        // update only when the tank is equal to uid
-                    } else if (m instanceof BulletLaunchMsg){
-                        BulletLaunchMsg bm = (BulletLaunchMsg) m;
-                        map.addEle(new Bullet(bm));
-                    } else if (m instanceof HPUpdMsg){
-                        HPUpdMsg hm = (HPUpdMsg) m;
-                        GameElement ge = map.getEleById(hm.getId());
-                        if (ge == null) continue;
-                        ge.setHp(hm.getNewHp());
-                    } else if (m instanceof MovableUpdMsg){
-                        MovableUpdMsg mm = (MovableUpdMsg) m;
-                        MovableElement me = (MovableElement)map.getEleById(mm.getId());
-                        if (me == null) continue;
-                        me.setPos(mm.getPos());
-                        if (me.getId() != uid)
-                            me.setDir(mm.getDir());
-                        // no need to set direction for self
-                    } else if (m instanceof RemEleMsg){
-                        RemEleMsg rm = (RemEleMsg) m;
-                        GameElement ge = map.getEleById(rm.getId());
-                        if (ge == null) continue;
-                        ge.setRemStat(RemStat.TO_REM);
-                    }
+            while (msgRecved.size() > 0) {
+                EvtMsg m = msgRecved.poll();
+                if (m instanceof BornMsg) {
+                    BornMsg bm = (BornMsg) m;
+                    if (map.getEleById(bm.id) != null) // already added this tank
+                        continue;
+                    map.addEle(new Tank(bm, uid == bm.getId()));
+                    // update only when the tank is equal to uid
+                } else if (m instanceof BulletLaunchMsg) {
+                    BulletLaunchMsg bm = (BulletLaunchMsg) m;
+                    map.addEle(new Bullet(bm));
+                } else if (m instanceof HPUpdMsg) {
+                    HPUpdMsg hm = (HPUpdMsg) m;
+                    GameElement ge = map.getEleById(hm.getId());
+                    if (ge == null)
+                        continue;
+                    ge.setHp(hm.getNewHp());
+                } else if (m instanceof MovableUpdMsg) {
+                    MovableUpdMsg mm = (MovableUpdMsg) m;
+                    MovableElement me = (MovableElement) map.getEleById(mm.getId());
+                    if (me == null)
+                        continue;
+                    me.setPos(mm.getPos());
+                    if (me.getId() != uid)
+                        me.setDir(mm.getDir());
+                    // no need to set direction for self
+                } else if (m instanceof RemEleMsg) {
+                    RemEleMsg rm = (RemEleMsg) m;
+                    GameElement ge = map.getEleById(rm.getId());
+                    if (ge == null)
+                        continue;
+                    ge.setRemStat(RemStat.TO_REM);
                 }
             }
+        }
         // }
     }
+
     public static void main(String[] args) {
         new ClntMain();
     }

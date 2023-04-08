@@ -2,13 +2,15 @@ package graphics;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import networkings.msgs.MapInitMsg;
 import utils.*;
 
 public class GUI {
-    GamePanel gpanle;
+    GamePanel gpanel;
     JFrame frame;
-    public GUI() {
-        gpanle = new GamePanel();
+    public GUI(GamePanel gpanle) {
+        this.gpanel = gpanle;
         try {
             Thread.sleep(200); // wait to get uid
         } catch (InterruptedException e) {
@@ -25,12 +27,20 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    public GamePanel getGpanle() {
-        return gpanle;
+    public GUI(){
+        this(new GamePanel());
     }
 
-    public void setGpanle(GamePanel gpanle) {
-        this.gpanle = gpanle;
+    public GUI(MapInitMsg msg){
+        this(new GamePanel(msg));
+    }
+
+    public GamePanel getGpanel() {
+        return gpanel;
+    }
+
+    public void setGpanel(GamePanel gpanle) {
+        this.gpanel = gpanle;
     }
 
     public JFrame getFrame() {

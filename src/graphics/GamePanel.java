@@ -7,6 +7,7 @@ import utils.*;
 import utils.Helpers.*;
 import gameElements.*;
 import gameElements.GameElement.RemStat;
+import networkings.msgs.MapInitMsg;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -104,10 +105,10 @@ public class GamePanel extends JPanel {
         lstRefresh = System.currentTimeMillis();
     }
 
-    public GamePanel() {
+    public GamePanel(GameMap map) {
         ShVar.gp = this;
         timer.start();
-        map = new GameMap("default.txt");
+        this.map = map;
         lstRefresh = System.currentTimeMillis();
         setLayout(null);
         for (GameElement b : map.getEles()) {
@@ -127,6 +128,15 @@ public class GamePanel extends JPanel {
             addedKeyControllable.add(kc);
         }
     }
+
+    public GamePanel() {
+        this(new GameMap("default.txt"));
+    }
+
+    public GamePanel(MapInitMsg msg) {
+        this(new GameMap(msg));
+    }
+
 
     @Override
     public Dimension getPreferredSize() {
